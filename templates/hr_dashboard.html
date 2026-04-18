@@ -8,85 +8,69 @@
 
 <div class="row g-4 mb-4">
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#4e8cff;">
-                <i class="fa fa-users"></i>
+        <a href="{% url 'dash_employees' %}" class="text-decoration-none">
+            <div class="stat-card" style="cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+                <div class="stat-icon" style="background:#4e8cff;"><i class="fa fa-users"></i></div>
+                <div class="stat-info"><h3>{{ total_employees }}</h3><p>Total Employees</p></div>
             </div>
-            <div class="stat-info">
-                <h3>{{ total_employees }}</h3>
-                <p>Total Employees</p>
-            </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#38a169;">
-                <i class="fa fa-file-circle-check"></i>
+        <a href="{% url 'dash_verified_docs' %}" class="text-decoration-none">
+            <div class="stat-card" style="cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+                <div class="stat-icon" style="background:#38a169;"><i class="fa fa-file-circle-check"></i></div>
+                <div class="stat-info"><h3>{{ verified_docs }}</h3><p>Verified Documents</p></div>
             </div>
-            <div class="stat-info">
-                <h3>{{ verified_docs }}</h3>
-                <p>Verified Documents</p>
-            </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#e53e3e;">
-                <i class="fa fa-clock"></i>
+        <a href="{% url 'dash_pending_docs' %}" class="text-decoration-none">
+            <div class="stat-card" style="cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+                <div class="stat-icon" style="background:#e53e3e;"><i class="fa fa-clock"></i></div>
+                <div class="stat-info"><h3>{{ pending_docs }}</h3><p>Pending Documents</p></div>
             </div>
-            <div class="stat-info">
-                <h3>{{ pending_docs }}</h3>
-                <p>Pending Documents</p>
-            </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background:#d69e2e;">
-                <i class="fa fa-list-check"></i>
+        <a href="{% url 'dash_pending_tasks' %}" class="text-decoration-none">
+            <div class="stat-card" style="cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+                <div class="stat-icon" style="background:#d69e2e;"><i class="fa fa-list-check"></i></div>
+                <div class="stat-info"><h3>{{ pending_tasks }}</h3><p>Pending Tasks</p></div>
             </div>
-            <div class="stat-info">
-                <h3>{{ pending_tasks }}</h3>
-                <p>Pending Tasks</p>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'dash_pending_leaves' %}" class="text-decoration-none">
+            <div class="stat-card" style="cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+                <div class="stat-icon" style="background:#805ad5;"><i class="fa fa-calendar-xmark"></i></div>
+                <div class="stat-info"><h3>{{ pending_leave }}</h3><p>Pending Leave Requests</p></div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
 <div class="row g-4">
     <div class="col-md-4">
         <div class="card-clean h-100">
-            <h5><i class="fa fa-user-plus me-2 text-primary"></i>Add Employee</h5>
-            <p class="text-muted small">Add new employees to the system.</p>
-            <a href="/hr/add-employee/" class="btn btn-primary btn-sm">Add Employee</a>
+            <h5><i class="fa fa-calendar-check me-2" style="color:#38a169;"></i>Attendance</h5>
+            <p class="text-muted small">Mark and manage employee attendance records.</p>
+            <a href="/hr/attendance/" class="btn btn-sm" style="background:#38a169;color:white;">Manage Attendance</a>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card-clean h-100">
-            <h5><i class="fa fa-users me-2 text-success"></i>Employee List</h5>
-            <p class="text-muted small">View and manage all employees.</p>
-            <a href="/hr/employees/" class="btn btn-success btn-sm">View Employees</a>
+            <h5><i class="fa fa-calendar-xmark me-2" style="color:#805ad5;"></i>Leave Requests
+                {% if pending_leave %}<span class="badge rounded-pill bg-danger ms-1" style="font-size:11px;">{{ pending_leave }}</span>{% endif %}
+            </h5>
+            <p class="text-muted small">Review and approve employee leave applications.</p>
+            <a href="/hr/leaves/" class="btn btn-sm" style="background:#805ad5;color:white;">Manage Leaves</a>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card-clean h-100">
-            <h5><i class="fa fa-file-alt me-2 text-warning"></i>Documents</h5>
-            <p class="text-muted small">Review and verify uploaded documents.</p>
-            <a href="/hr/documents/" class="btn btn-warning btn-sm">View Documents</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card-clean h-100">
-            <h5><i class="fa fa-tasks me-2 text-danger"></i>Assign Task</h5>
-            <p class="text-muted small">Assign onboarding tasks to employees.</p>
-            <a href="/hr/assign-task/" class="btn btn-danger btn-sm">Assign Task</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card-clean h-100">
-            <h5><i class="fa fa-chart-pie me-2 text-info"></i>Analytics</h5>
-            <p class="text-muted small">View HR statistics and charts.</p>
-            <a href="/hr/analytics/" class="btn btn-info btn-sm text-white">View Analytics</a>
+            <h5><i class="fa fa-indian-rupee-sign me-2" style="color:#2b6cb0;"></i>Salary</h5>
+            <p class="text-muted small">Create salary records and mark monthly payments.</p>
+            <a href="/hr/salary/" class="btn btn-sm" style="background:#2b6cb0;color:white;">Manage Salary</a>
         </div>
     </div>
 </div>

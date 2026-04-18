@@ -103,7 +103,7 @@
             color: white;
         }
 
-        .stat-info h3 { font-size: 24px; font-weight: 700; margin: 0; }
+        .stat-info h3 { font-size: 24px; font-weight: 700; margin: 0; color: #111827; }
         .stat-info p { margin: 0; color: #718096; font-size: 13px; }
 
         .card-clean {
@@ -122,14 +122,17 @@
         <a href="/hr/dashboard/"   class="{% if request.path == '/hr/dashboard/' %}active{% endif %}">
             <i class="fa fa-gauge"></i> Dashboard
         </a>
+        <a href="/hr/add-employee/" class="{% if request.path == '/hr/add-employee/' %}active{% endif %}">
+            <i class="fa fa-user-plus"></i> Add Employee
+        </a>
         <a href="/hr/employees/"   class="{% if request.path == '/hr/employees/' %}active{% endif %}">
-            <i class="fa fa-users"></i> Employees
+            <i class="fa fa-users"></i> Employee List
         </a>
         <a href="/hr/documents/"   class="{% if request.path == '/hr/documents/' %}active{% endif %}">
             <i class="fa fa-file-alt"></i> Documents
         </a>
         <a href="/hr/assign-task/" class="{% if request.path == '/hr/assign-task/' %}active{% endif %}">
-            <i class="fa fa-tasks"></i> Tasks
+            <i class="fa fa-tasks"></i> Assign Tasks
         </a>
         <a href="/hr/analytics/"   class="{% if request.path == '/hr/analytics/' %}active{% endif %}">
             <i class="fa fa-chart-pie"></i> Analytics

@@ -97,7 +97,9 @@
 
     {% if messages %}
         {% for message in messages %}
+        {% if message.tags == 'error' or message.tags == 'warning' %}
         <div class="alert alert-danger py-2">{{ message }}</div>
+        {% endif %}
         {% endfor %}
     {% endif %}
 

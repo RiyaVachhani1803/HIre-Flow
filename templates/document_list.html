@@ -101,14 +101,21 @@
   .doc-table tbody tr { transition: background .1s; }
   .doc-table tbody tr:hover td { background: #fafbff; }
 
-  .emp-cell { display: flex; align-items: center; gap: 10px; }
+  /* ── Clickable employee cell ── */
+  .emp-cell {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: inherit;
+  }
+  .emp-cell:hover .emp-avatar { transform: scale(1.08); box-shadow: 0 0 0 3px rgba(59,110,248,.25); }
+  .emp-cell:hover .emp-name-text { color: var(--primary); }
   .emp-avatar {
     width: 34px; height: 34px; border-radius: 50%;
     background: linear-gradient(135deg, #3b6ef8, #60a5fa);
     display: flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; text-transform: uppercase;
+    transition: transform .15s, box-shadow .15s;
   }
-  .emp-name-text { font-size: 13.5px; font-weight: 600; }
+  .emp-name-text { font-size: 13.5px; font-weight: 600; transition: color .15s; }
   .emp-dept      { font-size: 11.5px; color: var(--text-3); }
 
   .doc-type-cell { display: flex; align-items: center; gap: 9px; }
@@ -120,6 +127,15 @@
   }
   .doc-type-name { font-weight: 500; font-size: 13.5px; }
   .date-text { font-size: 13px; color: var(--text-2); font-family: 'DM Mono', monospace; }
+
+  /* ── Clickable file link ── */
+  .file-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500; color: var(--primary);
+    text-decoration: none; padding: 4px 0;
+  }
+  .file-link:hover { text-decoration: underline; color: #2451d1; }
+  .file-link i { font-size: 14px; }
 
   .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 4px 10px; }
   .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
@@ -147,8 +163,6 @@
     transition: all .15s; white-space: nowrap; cursor: pointer;
   }
   .btn-verify:hover { background: #bbf7d0; color: var(--success); }
-
-  /* ── NEW: Reject button ── */
   .btn-reject {
     display: inline-flex; align-items: center; gap: 5px;
     font-size: 12px; font-weight: 500; color: var(--danger);
@@ -159,14 +173,12 @@
   }
   .btn-reject:hover { background: #fecaca; color: var(--danger); }
 
-  /* ── Rejection reason tooltip ── */
   .rejection-note {
     display: block; font-size: 11px; color: var(--danger);
     margin-top: 4px; font-style: italic; max-width: 160px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  /* ── Modal overlay ── */
   .modal-overlay {
     display: none; position: fixed; inset: 0; z-index: 1000;
     background: rgba(17,24,39,.45); backdrop-filter: blur(3px);
@@ -198,7 +210,6 @@
   .reason-chip:hover, .reason-chip.selected {
     border-color: var(--danger); background: var(--danger-soft); color: var(--danger);
   }
-
   .reason-textarea {
     width: 100%; box-sizing: border-box; height: 90px; resize: vertical;
     font-size: 13px; font-family: 'DM Sans', sans-serif;
@@ -257,7 +268,6 @@
   </div>
 </div>
 
-<!-- Stats -->
 <div class="stats-row">
   <div class="stat-card">
     <div class="stat-icon stat-icon-blue"><i class="fa fa-files-o"></i></div>
@@ -278,8 +288,6 @@
 </div>
 
 <div class="main-card">
-
-  <!-- Toolbar -->
   <div class="toolbar">
     <div class="search-wrap">
       <i class="fa fa-search"></i>
@@ -303,7 +311,6 @@
     <span class="doc-count-pill" id="countLabel">Loading…</span>
   </div>
 
-  <!-- Table -->
   <div style="overflow-x:auto;">
     <table class="doc-table" id="docTable">
       <thead>
@@ -323,15 +330,18 @@
           data-status="{% if doc.verified %}verified{% elif doc.rejected %}rejected{% else %}pending{% endif %}"
           data-search="{{ doc.employee.full_name|lower }} {{ doc.get_document_type_display|lower }}"
         >
+          <!-- ── Employee (avatar + name → profile) ── -->
           <td>
-            <div class="emp-cell">
+            <a href="{% url 'employee_profile' doc.employee.pk %}" class="emp-cell" title="View {{ doc.employee.full_name }}'s profile">
               <div class="emp-avatar">{{ doc.employee.full_name|first }}</div>
               <div>
                 <div class="emp-name-text">{{ doc.employee.full_name }}</div>
                 <div class="emp-dept">{{ doc.employee.department }}</div>
               </div>
-            </div>
+            </a>
           </td>
+
+          <!-- ── Document type ── -->
           <td>
             <div class="doc-type-cell">
               <div class="doc-icon">
@@ -344,12 +354,23 @@
               <span class="doc-type-name">{{ doc.get_document_type_display }}</span>
             </div>
           </td>
+
+          <!-- ── Upload date ── -->
           <td><span class="date-text">{{ doc.uploaded_at|date:"d M Y"|default:"—" }}</span></td>
+
+          <!-- ── File (clickable → opens in new tab) ── -->
           <td>
-            <a href="{{ doc.file.url }}" class="btn-view" target="_blank">
-              <i class="fa fa-eye" style="font-size:11px;"></i> View
+            {% if doc.file %}
+            <a href="{{ doc.file.url }}" class="btn-view" target="_blank" rel="noopener"
+               onclick="event.stopPropagation()">
+              <i class="fa fa-eye" style="font-size:11px;"></i> Open File
             </a>
+            {% else %}
+            <span style="font-size:12px;color:var(--text-3);">No file</span>
+            {% endif %}
           </td>
+
+          <!-- ── Status ── -->
           <td>
             {% if doc.verified %}
               <span class="badge badge-success"><span class="badge-dot"></span>Verified</span>
@@ -364,14 +385,14 @@
               <span class="badge badge-warning"><span class="badge-dot"></span>Pending</span>
             {% endif %}
           </td>
+
+          <!-- ── Actions ── -->
           <td>
             <div class="actions-cell">
               {% if not doc.verified and not doc.rejected %}
-                <!-- Verify -->
                 <a href="{% url 'verify_document' doc.pk %}" class="btn-verify">
                   <i class="fa fa-check" style="font-size:11px;"></i> Verify
                 </a>
-                <!-- Reject — opens modal -->
                 <button
                   class="btn-reject"
                   onclick="openRejectModal({{ doc.pk }}, '{{ doc.employee.full_name|escapejs }}', '{{ doc.get_document_type_display|escapejs }}')"
@@ -380,14 +401,10 @@
                 </button>
               {% endif %}
               {% if doc.rejected %}
-                <!-- Allow re-verify after rejection -->
                 <a href="{% url 'verify_document' doc.pk %}" class="btn-verify">
                   <i class="fa fa-refresh" style="font-size:11px;"></i> Re-verify
                 </a>
               {% endif %}
-              <a href="{% url 'employee_profile' doc.employee.pk %}" class="btn-view">
-                <i class="fa fa-user" style="font-size:11px;"></i> Profile
-              </a>
             </div>
           </td>
         </tr>
@@ -406,7 +423,6 @@
     </table>
   </div>
 
-  <!-- Pagination -->
   <div class="pagination-row">
     <span class="page-info" id="pageInfo">
       {% if page_obj %}
@@ -435,10 +451,9 @@
     </div>
     {% endif %}
   </div>
-
 </div>
 
-<!-- ══════════════ REJECT MODAL ══════════════ -->
+<!-- Reject Modal -->
 <div class="modal-overlay" id="rejectModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -448,7 +463,6 @@
         <p class="modal-sub" id="modalSubtitle">Provide a reason for rejection</p>
       </div>
     </div>
-
     <label class="modal-label">Quick reasons</label>
     <div class="reason-quick">
       <span class="reason-chip" onclick="selectChip(this, 'Document is blurry or unreadable')">Blurry / Unreadable</span>
@@ -457,11 +471,8 @@
       <span class="reason-chip" onclick="selectChip(this, 'Document appears tampered or fake')">Tampered / Fake</span>
       <span class="reason-chip" onclick="selectChip(this, 'Incomplete document — pages missing')">Incomplete</span>
     </div>
-
     <label class="modal-label" for="rejectReason">Additional notes (optional)</label>
-    <textarea class="reason-textarea" id="rejectReason"
-              placeholder="Add more context for the employee…"></textarea>
-
+    <textarea class="reason-textarea" id="rejectReason" placeholder="Add more context for the employee…"></textarea>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
       <form id="rejectForm" method="POST" style="margin:0;">
@@ -476,35 +487,28 @@
 </div>
 
 <script>
-  // ── Stats (includes rejected) ────────────────────────────────────
   const allRows = Array.from(document.querySelectorAll('#docTable tbody tr[data-status]'));
 
   function computeStats() {
-    const total    = allRows.length;
-    const verified = allRows.filter(r => r.dataset.status === 'verified').length;
-    const pending  = allRows.filter(r => r.dataset.status === 'pending').length;
-    const rejected = allRows.filter(r => r.dataset.status === 'rejected').length;
-    document.getElementById('stat-total').textContent    = total;
-    document.getElementById('stat-verified').textContent = verified;
-    document.getElementById('stat-pending').textContent  = pending;
-    document.getElementById('stat-rejected').textContent = rejected;
+    document.getElementById('stat-total').textContent    = allRows.length;
+    document.getElementById('stat-verified').textContent = allRows.filter(r => r.dataset.status === 'verified').length;
+    document.getElementById('stat-pending').textContent  = allRows.filter(r => r.dataset.status === 'pending').length;
+    document.getElementById('stat-rejected').textContent = allRows.filter(r => r.dataset.status === 'rejected').length;
   }
   computeStats();
 
-  // ── Filter / search ──────────────────────────────────────────────
   const searchInput  = document.getElementById('docSearch');
   const filterType   = document.getElementById('filterType');
   const filterStatus = document.getElementById('filterStatus');
   const countLabel   = document.getElementById('countLabel');
 
   function applyFilters() {
-    const q      = searchInput.value.toLowerCase().trim();
-    const type   = filterType.value;
+    const q = searchInput.value.toLowerCase().trim();
+    const type = filterType.value;
     const status = filterStatus.value;
-    let visible  = 0;
-
+    let visible = 0;
     allRows.forEach(row => {
-      const ok = (!q      || row.dataset.search.includes(q))
+      const ok = (!q || row.dataset.search.includes(q))
               && (!type   || row.dataset.type   === type)
               && (!status || row.dataset.status === status);
       row.style.display = ok ? '' : 'none';
@@ -514,19 +518,16 @@
   }
   applyFilters();
 
-  searchInput.addEventListener('input',  applyFilters);
-  filterType.addEventListener('change',  applyFilters);
+  searchInput.addEventListener('input',   applyFilters);
+  filterType.addEventListener('change',   applyFilters);
   filterStatus.addEventListener('change', applyFilters);
 
-  // ── Reject modal ─────────────────────────────────────────────────
   let selectedChip = null;
 
   function openRejectModal(docId, empName, docType) {
-    document.getElementById('modalSubtitle').textContent =
-      empName + ' — ' + docType;
+    document.getElementById('modalSubtitle').textContent = empName + ' — ' + docType;
     document.getElementById('rejectForm').action = '/hr/documents/' + docId + '/reject/';
     document.getElementById('rejectReason').value = '';
-    // reset chips
     document.querySelectorAll('.reason-chip').forEach(c => c.classList.remove('selected'));
     selectedChip = null;
     document.getElementById('rejectModal').classList.add('open');
@@ -540,7 +541,6 @@
     document.querySelectorAll('.reason-chip').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
     selectedChip = text;
-    // Pre-fill textarea only if it's empty
     if (!document.getElementById('rejectReason').value.trim()) {
       document.getElementById('rejectReason').value = text;
     }
@@ -548,12 +548,9 @@
 
   function submitRejection(e) {
     const textarea = document.getElementById('rejectReason').value.trim();
-    const finalReason = textarea || selectedChip || 'No reason provided';
-    document.getElementById('reasonHidden').value = finalReason;
-    // form submits normally
+    document.getElementById('reasonHidden').value = textarea || selectedChip || 'No reason provided';
   }
 
-  // Close modal on overlay click
   document.getElementById('rejectModal').addEventListener('click', function(e) {
     if (e.target === this) closeRejectModal();
   });
