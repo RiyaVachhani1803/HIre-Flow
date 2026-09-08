@@ -98,9 +98,15 @@
         <strong>Save this ID!</strong> You will need it every time you log in.
     </div>
 
-    <a href="/login/employee/" class="btn-login">
-        <i class="fa fa-sign-in-alt me-2"></i>Go to Login
-    </a>
+    {% if employee_id and employee_id|slice:":1" == "H" %}
+      <a href="/login/hr/" class="btn-login">
+          <i class="fa fa-sign-in-alt me-2"></i>Go to Login
+      </a>
+    {% else %}
+      <a href="/login/employee/" class="btn-login">
+          <i class="fa fa-sign-in-alt me-2"></i>Go to Login
+      </a>
+    {% endif %}
     <a href="/" class="btn-home">
         <i class="fa fa-house me-2"></i>Back to Home
     </a>

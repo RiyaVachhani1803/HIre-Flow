@@ -119,24 +119,48 @@
 <div class="sidebar">
     <div class="sidebar-brand">HireFlow</div>
     <nav>
-        <a href="/hr/dashboard/"   class="{% if request.path == '/hr/dashboard/' %}active{% endif %}">
-            <i class="fa fa-gauge"></i> Dashboard
-        </a>
-        <a href="/hr/add-employee/" class="{% if request.path == '/hr/add-employee/' %}active{% endif %}">
-            <i class="fa fa-user-plus"></i> Add Employee
-        </a>
-        <a href="/hr/employees/"   class="{% if request.path == '/hr/employees/' %}active{% endif %}">
-            <i class="fa fa-users"></i> Employee List
-        </a>
-        <a href="/hr/documents/"   class="{% if request.path == '/hr/documents/' %}active{% endif %}">
-            <i class="fa fa-file-alt"></i> Documents
-        </a>
-        <a href="/hr/assign-task/" class="{% if request.path == '/hr/assign-task/' %}active{% endif %}">
-            <i class="fa fa-tasks"></i> Assign Tasks
-        </a>
-        <a href="/hr/analytics/"   class="{% if request.path == '/hr/analytics/' %}active{% endif %}">
-            <i class="fa fa-chart-pie"></i> Analytics
-        </a>
+        {% if is_hr %}
+            <a href="/hr/dashboard/"   class="{% if request.path == '/hr/dashboard/' %}active{% endif %}">
+                <i class="fa fa-gauge"></i> Dashboard
+            </a>
+            <a href="/hr/add-employee/" class="{% if request.path == '/hr/add-employee/' %}active{% endif %}">
+                <i class="fa fa-user-plus"></i> Add Employee
+            </a>
+            <a href="/hr/employees/"   class="{% if request.path == '/hr/employees/' %}active{% endif %}">
+                <i class="fa fa-users"></i> Employee List
+            </a>
+            <a href="/hr/documents/"   class="{% if request.path == '/hr/documents/' %}active{% endif %}">
+                <i class="fa fa-file-alt"></i> Documents
+            </a>
+            <a href="/hr/assign-task/" class="{% if request.path == '/hr/assign-task/' %}active{% endif %}">
+                <i class="fa fa-tasks"></i> Assign Tasks
+            </a>
+            <a href="/hr/analytics/"   class="{% if request.path == '/hr/analytics/' %}active{% endif %}">
+                <i class="fa fa-chart-pie"></i> Analytics
+            </a>
+        {% elif is_employee %}
+            <a href="/employee/dashboard/" class="{% if request.path == '/employee/dashboard/' %}active{% endif %}">
+                <i class="fa fa-gauge"></i> Dashboard
+            </a>
+            <a href="/employee/profile/" class="{% if request.path == '/employee/profile/' %}active{% endif %}">
+                <i class="fa fa-user"></i> My Profile
+            </a>
+            <a href="/employee/upload-document/" class="{% if request.path == '/employee/upload-document/' %}active{% endif %}">
+                <i class="fa fa-file-alt"></i> Documents & Resume
+            </a>
+            <a href="/employee/tasks/" class="{% if request.path == '/employee/tasks/' %}active{% endif %}">
+                <i class="fa fa-tasks"></i> My Tasks
+            </a>
+            <a href="/employee/attendance/" class="{% if request.path == '/employee/attendance/' %}active{% endif %}">
+                <i class="fa fa-calendar-check"></i> Attendance
+            </a>
+            <a href="/employee/leave/" class="{% if request.path == '/employee/leave/' %}active{% endif %}">
+                <i class="fa fa-calendar-times"></i> Leave Requests
+            </a>
+            <a href="/employee/salary/" class="{% if request.path == '/employee/salary/' %}active{% endif %}">
+                <i class="fa fa-indian-rupee-sign"></i> My Salary
+            </a>
+        {% endif %}
     </nav>
     <div class="sidebar-footer">
         <a href="/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a>

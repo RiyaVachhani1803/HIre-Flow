@@ -1,107 +1,262 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 {% block title %}My Profile{% endblock %}
+
 {% block content %}
-<div class="container py-4" style="max-width: 800px">
-  <div class="card shadow-sm border-0">
-    <!-- Header -->
-    <div class="card-header bg-primary text-white py-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center fw-bold"
-             style="width:60px;height:60px;font-size:1.5rem">
-          {{ employee.full_name|first|upper }}
-        </div>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f0f3fa;
+    --surface: #ffffff;
+    --surface-2: #f7f9fd;
+    --border: #e4e9f4;
+    --primary: #3b6ef8;
+    --primary-soft: #eef2ff;
+    --primary-hover: #2f5de0;
+    --success: #16a34a;
+    --success-soft: #dcfce7;
+    --warning: #d97706;
+    --warning-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --text: #111827;
+    --text-2: #6b7280;
+    --text-3: #9ca3af;
+    --radius: 14px;
+    --shadow: 0 1px 4px rgba(0,0,0,.06), 0 6px 24px rgba(0,0,0,.07);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  }
+
+  body { font-family: 'DM Sans', sans-serif; color: var(--text); }
+
+  /* Page header */
+  .ph { display: flex; align-items: center; justify-content: space-between; padding: 20px 0 22px; }
+  .ph-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--primary); margin: 0 0 4px; }
+  .ph-title { font-size: 22px; font-weight: 750; letter-spacing: -.3px; margin: 0; }
+  .ph-sub   { font-size: 13px; color: var(--text-2); margin: 3px 0 0; }
+
+  /* Layout */
+  .detail-grid { display: grid; grid-template-columns: 290px 1fr; gap: 20px; padding-bottom: 44px; }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .card-body { padding: 24px; }
+
+  /* Left sidebar */
+  .avatar-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 30px 20px 22px;
+    background: linear-gradient(160deg, #eef2ff 0%, #f7f9fd 65%);
+    border-bottom: 1px solid var(--border);
+  }
+  .avatar-ring { width: 82px; height: 82px; border-radius: 50%; background: linear-gradient(135deg, rgba(59,110,248,.15), rgba(96,165,250,.15)); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px rgba(59,110,248,.1); }
+  .avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #3b6ef8, #60a5fa); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 750; color: #fff; box-shadow: 0 4px 16px rgba(59,110,248,.4); letter-spacing: -.5px; text-transform: uppercase; }
+  .emp-name { font-size: 16.5px; font-weight: 700; margin: 14px 0 4px; text-align: center; }
+  .emp-id { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-3); background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 3px 9px; letter-spacing: .5px; }
+
+  .info-list { list-style: none; margin: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .info-item { display: flex; align-items: center; gap: 11px; }
+  .info-icon { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-2); font-size: 13px; }
+  .info-label { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .6px; font-weight: 700; margin-bottom: 1px; }
+  .info-value { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  .divider { height: 1px; background: var(--border); margin: 0 20px; }
+  .sidebar-section { padding: 14px 20px; }
+  .sidebar-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--text-3); margin-bottom: 10px; }
+
+  /* Badges */
+  .badge-status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 4px 10px; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .badge-success { background: var(--success-soft); color: var(--success); }
+  .badge-success .badge-dot { background: var(--success); }
+  .badge-primary { background: var(--primary-soft); color: var(--primary); }
+  .badge-primary .badge-dot { background: var(--primary); }
+  .badge-danger  { background: var(--danger-soft);  color: var(--danger);  }
+  .badge-danger  .badge-dot { background: var(--danger); }
+  .badge-warning { background: var(--warning-soft); color: var(--warning); }
+  .badge-warning .badge-dot { background: var(--warning); }
+
+  .btn-action-primary {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; color: #fff;
+    background: var(--primary); border: none;
+    border-radius: 8px; padding: 8px 16px; text-decoration: none;
+    box-shadow: 0 2px 8px rgba(59,110,248,.2);
+    transition: all .15s; cursor: pointer;
+  }
+  .btn-action-primary:hover { background: var(--primary-hover); box-shadow: 0 4px 14px rgba(59,110,248,.3); }
+
+  .btn-action-outline {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 500; color: var(--primary);
+    background: var(--primary-soft); border: 1px solid #c7d4fc;
+    border-radius: 8px; padding: 7px 14px; text-decoration: none;
+    transition: all .15s; cursor: pointer;
+  }
+  .btn-action-outline:hover { background: #dde7ff; }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 20px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .section-title { font-size: 15px; font-weight: 700; margin: 0; }
+
+  /* Progress */
+  .pct-pill { font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--primary); background: var(--primary-soft); border-radius: 20px; padding: 3px 13px; }
+  .progress-track { height: 11px; border-radius: 100px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #3b6ef8, #60a5fa); transition: width .6s cubic-bezier(.4,0,.2,1); position: relative; }
+  .progress-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 24px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28)); border-radius: 0 100px 100px 0; }
+  .progress-meta { display: flex; justify-content: space-between; margin-top: 9px; font-size: 11.5px; color: var(--text-3); }
+
+  @media (max-width: 860px) {
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<!-- Page Header -->
+<div class="ph">
+  <div>
+    <h2 class="ph-title">{{ employee.full_name }}</h2>
+    <p class="ph-sub">{{ employee.position }} &bull; {{ employee.department }}</p>
+  </div>
+  <a href="{% url 'upload_resume' %}" class="btn-action-primary">
+    <i class="fa fa-file-text"></i> Update Resume
+  </a>
+</div>
+
+<div class="detail-grid">
+
+  <!-- ── Left sidebar ─────────────── -->
+  <div class="card" style="align-self:start;">
+    <div class="avatar-wrap">
+      <div class="avatar-ring">
+        <div class="avatar">{{ employee.full_name|first }}</div>
+      </div>
+      <p class="emp-name">{{ employee.full_name }}</p>
+      <span class="emp-id">{{ employee.employee_id }}</span>
+    </div>
+
+    <ul class="info-list">
+      <li class="info-item">
+        <div class="info-icon"><i class="fa fa-envelope"></i></div>
         <div>
-          <h4 class="mb-0 fw-bold">{{ employee.full_name }}</h4>
-          <small>{{ employee.position }} — {{ employee.department }}</small>
+          <div class="info-label">Email</div>
+          <div class="info-value" style="font-size:12.5px; word-break:break-word;">{{ employee.email }}</div>
         </div>
-        <a href="{% url 'upload_resume' %}" class="btn btn-light btn-sm ms-auto">
-          <i class="bi bi-upload me-1"></i>Update Resume
-        </a>
+      </li>
+      <li class="info-item">
+        <div class="info-icon"><i class="fa fa-phone"></i></div>
+        <div>
+          <div class="info-label">Phone</div>
+          <div class="info-value">{{ employee.phone|default:"—" }}</div>
+        </div>
+      </li>
+      <li class="info-item">
+        <div class="info-icon"><i class="fa fa-building"></i></div>
+        <div>
+          <div class="info-label">Department</div>
+          <div class="info-value">{{ employee.department }}</div>
+        </div>
+      </li>
+      <li class="info-item">
+        <div class="info-icon"><i class="fa fa-briefcase"></i></div>
+        <div>
+          <div class="info-label">Position</div>
+          <div class="info-value">{{ employee.position }}</div>
+        </div>
+      </li>
+      <li class="info-item">
+        <div class="info-icon"><i class="fa fa-calendar"></i></div>
+        <div>
+          <div class="info-label">Joined</div>
+          <div class="info-value">{{ employee.joining_date|default:"—" }}</div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <div class="sidebar-section" style="padding-bottom:22px;">
+      <div class="sidebar-label">Status</div>
+      {% if employee.status == 'active' %}
+        <span class="badge-status badge-success"><span class="badge-dot"></span>Active</span>
+      {% elif employee.status == 'onboarding' %}
+        <span class="badge-status badge-warning"><span class="badge-dot"></span>Onboarding</span>
+      {% else %}
+        <span class="badge-status badge-danger"><span class="badge-dot"></span>Inactive</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Right column ──────────────── -->
+  <div class="right-col">
+
+    <!-- Onboarding Progress -->
+    <div class="card">
+      <div class="card-body">
+        <div class="section-header">
+          <h5 class="section-title">Onboarding Progress</h5>
+          <span class="pct-pill">{{ employee.onboarding_progress }}%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:{{ employee.onboarding_progress }}%;"></div>
+        </div>
+        <div class="progress-meta">
+          <span>0%</span>
+          <span>
+            {% if employee.onboarding_progress < 30 %}Just started
+            {% elif employee.onboarding_progress < 70 %}In progress
+            {% elif employee.onboarding_progress < 100 %}Almost there
+            {% else %}✓ Complete{% endif %}
+          </span>
+          <span>100%</span>
+        </div>
       </div>
     </div>
 
-    <div class="card-body p-4">
-      <!-- Details -->
-      <div class="row g-3 mb-4">
-        <div class="col-md-6">
-          <label class="text-muted small">Employee ID</label>
-          <p class="fw-semibold mb-0">{{ employee.employee_id }}</p>
-        </div>
-        <div class="col-md-6">
-          <label class="text-muted small">Email</label>
-          <p class="fw-semibold mb-0">{{ employee.email }}</p>
-        </div>
-        <div class="col-md-6">
-          <label class="text-muted small">Phone</label>
-          <p class="fw-semibold mb-0">{{ employee.phone|default:"—" }}</p>
-        </div>
-        <div class="col-md-6">
-          <label class="text-muted small">Joining Date</label>
-          <p class="fw-semibold mb-0">{{ employee.joining_date|default:"—" }}</p>
-        </div>
-        <div class="col-md-6">
-          <label class="text-muted small">Status</label>
-          <p class="mb-0">
-            {% if employee.status == 'active' %}<span class="badge bg-success">Active</span>
-            {% elif employee.status == 'onboarding' %}<span class="badge bg-warning text-dark">Onboarding</span>
-            {% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
-          </p>
-        </div>
-      </div>
-
-      <!-- Skills Section -->
-      <div class="border-top pt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold mb-0"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Skills from Resume</h5>
-          <a href="{% url 'upload_resume' %}" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-arrow-repeat me-1"></i>Re-parse Resume
-          </a>
+    <!-- Skills Section -->
+    <div class="card">
+      <div class="card-body">
+        <div class="section-header">
+          <h5 class="section-title">Skills from Resume</h5>
+          <div class="d-flex gap-2">
+            {% if skills %}
+              <span class="pct-pill" style="font-family:inherit;">{{ skills|length }} Skill{{ skills|length|pluralize }}</span>
+            {% endif %}
+            <a href="{% url 'upload_resume' %}" class="btn-action-outline" style="font-size:11px; padding:4px 9px;">
+              <i class="fa fa-refresh"></i> Re-parse
+            </a>
+          </div>
         </div>
 
         {% if skills %}
-        <div class="d-flex flex-wrap gap-2">
-          {% for skill in skills %}
-          <span class="badge rounded-pill px-3 py-2 fs-6"
-                style="background: linear-gradient(135deg,#667eea,#764ba2); color:white;">
-            {{ skill }}
-          </span>
-          {% endfor %}
-        </div>
-        <p class="text-muted small mt-2">
-          <i class="bi bi-info-circle me-1"></i>
-          {{ skills|length }} skill{{ skills|length|pluralize }} extracted automatically from your resume.
-        </p>
-        {% else %}
-        <div class="alert alert-info d-flex align-items-center">
-          <i class="bi bi-info-circle-fill me-3 fs-4"></i>
-          <div>
-            No skills extracted yet.
-            <a href="{% url 'upload_resume' %}" class="alert-link">Upload your resume</a>
-            to automatically extract your skills.
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            {% for skill in skills %}
+              <span class="badge" style="background: linear-gradient(135deg,#667eea,#764ba2); color:white; font-size:12px; font-weight:600; padding:6px 12px; border-radius:20px;">
+                {{ skill }}
+              </span>
+            {% endfor %}
           </div>
-        </div>
+          <p class="text-muted small mt-3 mb-0">
+            <i class="fa fa-info-circle me-1"></i>
+            These skills were extracted automatically from your resume document.
+          </p>
+        {% else %}
+          <div class="alert alert-info d-flex align-items-center mb-0 mt-2">
+            <i class="fa fa-info-circle me-3 fs-5"></i>
+            <div>
+              No skills extracted yet.
+              <a href="{% url 'upload_resume' %}" class="alert-link">Upload your resume</a>
+              to automatically extract your skills.
+            </div>
+          </div>
         {% endif %}
-      </div>
 
-      <!-- Quick Links -->
-      <div class="border-top pt-4 mt-4">
-        <h6 class="fw-semibold mb-3">Quick Links</h6>
-        <div class="d-flex gap-2 flex-wrap">
-          <a href="{% url 'employee_attendance' %}" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-calendar-check me-1"></i>My Attendance
-          </a>
-          <a href="{% url 'employee_leave' %}" class="btn btn-outline-warning btn-sm">
-            <i class="bi bi-calendar-x me-1"></i>My Leave
-          </a>
-          <a href="{% url 'employee_salary' %}" class="btn btn-outline-success btn-sm">
-            <i class="bi bi-cash-coin me-1"></i>My Salary
-          </a>
-          <a href="{% url 'employee_tasks' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-check2-square me-1"></i>My Tasks
-          </a>
-        </div>
+
       </div>
     </div>
-  </div>
-</div>
+
+  </div><!-- /.right-col -->
+</div><!-- /.detail-grid -->
+
 {% endblock %}

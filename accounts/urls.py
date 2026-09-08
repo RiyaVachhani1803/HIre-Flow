@@ -9,5 +9,6 @@ urlpatterns = [
     path('login/employee/', views.login_employee, name='login_employee'),
     path('logout/', views.logout_view, name='logout'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/<uidb64>/<token>/', views.reset_password_confirm, name='password_reset_confirm'),
     path('forgot-id/', views.forgot_id, name='forgot_id'),
 ]

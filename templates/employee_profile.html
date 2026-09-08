@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load custom_filters %}
 {% block content %}
 
 <style>
@@ -406,6 +407,29 @@
           </span>
           <span>100%</span>
         </div>
+      </div>
+    </div>
+
+    <!-- Skills from Resume -->
+    <div class="card">
+      <div class="card-body">
+        <div class="section-header">
+          <h5 class="section-title">Skills from Resume</h5>
+          {% if skills %}
+            <span class="pct-pill" style="background:var(--primary-soft); color:var(--primary); font-family:inherit;">{{ skills|length }} Skill{{ skills|length|pluralize }}</span>
+          {% endif %}
+        </div>
+        {% if skills %}
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            {% for skill in skills %}
+              <span class="badge" style="background: linear-gradient(135deg,#667eea,#764ba2); color:white; font-size:12px; font-weight:600; padding:6px 12px; border-radius:20px;">
+                {{ skill }}
+              </span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="no-doc mt-2">No skills extracted yet. Ask employee to upload their resume.</p>
+        {% endif %}
       </div>
     </div>
 

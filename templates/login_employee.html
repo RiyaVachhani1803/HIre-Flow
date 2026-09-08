@@ -103,19 +103,22 @@
         {% endfor %}
     {% endif %}
 
-    <form method="POST" action="{% url 'login_employee' %}">
+    <form method="POST" action="{% url 'login_employee' %}" autocomplete="off">
         {% csrf_token %}
+        <!-- Dummy inputs to absorb browser autofill -->
+        <input type="text" name="prevent_autofill_username" style="display:none;" />
+        <input type="password" name="prevent_autofill_password" style="display:none;" />
 
         <div class="form-group">
             <i class="fa fa-envelope"></i>
             <input type="text" name="username" class="form-control"
-                   placeholder="Email or Username" required>
+                   placeholder="Email or Username" autocomplete="off" required>
         </div>
 
         <div class="form-group">
             <i class="fa fa-lock"></i>
             <input type="password" name="password" class="form-control"
-                   placeholder="Password" required>
+                   placeholder="Password" autocomplete="new-password" required>
         </div>
 
         <!-- Forgot Password / ID link -->
@@ -128,7 +131,7 @@
         <div class="form-group">
             <i class="fa fa-id-card"></i>
             <input type="text" name="employee_id" class="form-control"
-                   placeholder="Employee ID" required>
+                   placeholder="Employee ID" autocomplete="off" required>
         </div>
 
         <button type="submit" class="btn-login">

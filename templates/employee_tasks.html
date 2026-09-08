@@ -1,77 +1,188 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Tasks - HireFlow</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background: #f4f6f9; }
-        .topbar {
-            background: #1a1f2e;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .topbar .brand { font-size: 20px; font-weight: 700; }
-        .topbar .brand span { color: #4e8cff; }
-        .main { padding: 30px; }
-        .task-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px 25px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #4e8cff;
-        }
-        .task-card.done { border-left-color: #38a169; opacity: 0.75; }
-        .task-title { font-weight: 700; margin: 0; }
-        .task-desc { color: #718096; font-size: 13px; margin: 4px 0 0; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}My Onboarding Tasks{% endblock %}
+{% block content %}
+<style>
+  .task-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02), 0 1px 8px rgba(0, 0, 0, 0.01) !important;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #3b82f6;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.06), 0 2px 10px rgba(0, 0, 0, 0.02) !important;
+    border-color: #cbd5e1;
+  }
+  .task-card.done {
+    border-left-color: #10b981;
+    background: #f8fafc;
+    opacity: 0.9;
+  }
+  .task-checkbox-wrapper {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .task-card:hover:not(.done) .task-checkbox-wrapper {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+  }
+  .task-card.done .task-checkbox-wrapper {
+    border-color: #10b981;
+    background: #10b981;
+    color: #ffffff;
+  }
+  .task-content {
+    flex-grow: 1;
+    padding-right: 15px;
+  }
+  .task-title {
+    font-weight: 700;
+    font-size: 15.5px;
+    color: #1e293b;
+    margin: 0;
+    text-transform: capitalize;
+  }
+  .task-card.done .task-title {
+    color: #64748b;
+    text-decoration: line-through;
+  }
+  .task-desc {
+    color: #64748b;
+    font-size: 13.5px;
+    margin: 4px 0 0;
+    line-height: 1.5;
+  }
+  .task-card.done .task-desc {
+    color: #94a3b8;
+  }
+  .task-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #ecfdf5;
+    color: #065f46;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+</style>
 
-<div class="topbar">
-    <div class="brand">HireFlow</div>
-    <a href="/employee/dashboard/" class="btn btn-sm btn-outline-light">
-        <i class="fa fa-arrow-left me-1"></i>Dashboard
-    </a>
-</div>
+<div class="container-fluid py-4">
+  <h2 class="fw-bold mb-4 text-dark d-flex align-items-center" style="font-size: 24px; gap: 10px;">
+    My Onboarding Tasks
+  </h2>
 
-<div class="main">
-    <h4 class="fw-bold mb-4">My Tasks</h4>
+  <div style="max-width: 800px;">
+    <!-- Premium Dynamic Progress Tracker Card -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: #ffffff; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <h5 class="fw-bold text-dark mb-1" style="font-size: 15px;">Onboarding Progress</h5>
+            <p class="text-secondary small mb-0" id="progress-text">Calculating your progress...</p>
+          </div>
+          <div class="fs-4 fw-bold text-primary" id="progress-percent">0%</div>
+        </div>
+        <div class="progress" style="height: 8px; background: #f1f5f9; border-radius: 10px;">
+          <div class="progress-bar bg-primary" id="task-progress-bar" role="progressbar" style="width: 0%; border-radius: 10px; transition: width 0.4s ease;"></div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Tasks Loop -->
     {% for task in tasks %}
     <div class="task-card {% if task.completed %}done{% endif %}">
-        <div>
-            <p class="task-title">{{ task.title }}</p>
-            <p class="task-desc">{{ task.description }}</p>
-        </div>
-        <div class="text-end">
-            {% if task.completed %}
-                <span class="badge bg-success">
-                    <i class="fa fa-check me-1"></i>Completed
-                </span>
-            {% else %}
-                <a href="/employee/complete-task/{{ task.id }}/"
-                   class="btn btn-sm btn-success">
-                    <i class="fa fa-check me-1"></i>Mark Complete
-                </a>
-            {% endif %}
-        </div>
+      <!-- Circle status indicator on the left -->
+      <div class="task-checkbox-wrapper">
+        <i class="fa fa-check" style="font-size: 11px;"></i>
+      </div>
+      
+      <!-- Content section -->
+      <div class="task-content">
+        <h4 class="task-title">{{ task.title }}</h4>
+        <p class="task-desc">{{ task.description }}</p>
+      </div>
+      
+      <!-- Action section -->
+      <div class="text-end" style="flex-shrink: 0; margin-left: auto;">
+        {% if task.completed %}
+          <span class="task-status-badge">
+            <i class="fa fa-circle-check"></i> Completed
+          </span>
+        {% else %}
+          <a href="/employee/complete-task/{{ task.id }}/" class="btn btn-success btn-sm fw-semibold px-3 py-2" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); background-color: #10b981; border: none; transition: all 0.2s;">
+            <i class="fa fa-check me-1"></i> Mark Done
+          </a>
+        {% endif %}
+      </div>
     </div>
     {% empty %}
-        <div class="text-center text-muted py-5">
-            <i class="fa fa-clipboard fa-3x mb-3"></i>
-            <p>No tasks assigned yet.</p>
-        </div>
+    <!-- Beautiful placeholder illustration -->
+    <div class="text-center py-5" style="max-width: 450px; margin: 60px auto;">
+      <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width: 90px; height: 90px; border-radius: 50%; background: #ecfdf5; border: 4px solid #d1e7dd; color: #10b981; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15);">
+        <i class="fa fa-clipboard-check" style="font-size: 36px;"></i>
+      </div>
+      <h4 class="fw-bold text-dark mb-2">All Caught Up!</h4>
+      <p class="text-secondary small px-3">You have completed all your assigned onboarding tasks. Your manager or hiring authority will assign new tasks once they are required.</p>
+    </div>
     {% endfor %}
+  </div>
 </div>
 
-</body>
-</html>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const cards = document.querySelectorAll(".task-card");
+  const doneCards = document.querySelectorAll(".task-card.done");
+  
+  const total = cards.length;
+  const completed = doneCards.length;
+  
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+  
+  const progressText = document.getElementById("progress-text");
+  const progressPercent = document.getElementById("progress-percent");
+  const progressBar = document.getElementById("task-progress-bar");
+  
+  if (progressText && progressPercent && progressBar) {
+    if (total === 0) {
+      progressText.textContent = "No tasks assigned yet.";
+      progressPercent.textContent = "100%";
+      progressBar.style.width = "100%";
+      progressBar.classList.remove("bg-primary");
+      progressBar.classList.add("bg-success");
+      progressPercent.classList.remove("text-primary");
+      progressPercent.classList.add("text-success");
+    } else {
+      progressText.textContent = `${completed} of ${total} tasks completed`;
+      progressPercent.textContent = `${percent}%`;
+      progressBar.style.width = `${percent}%`;
+      if (percent === 100) {
+        progressBar.classList.remove("bg-primary");
+        progressBar.classList.add("bg-success");
+        progressPercent.classList.remove("text-primary");
+        progressPercent.classList.add("text-success");
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

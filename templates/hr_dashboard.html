@@ -16,14 +16,6 @@
         </a>
     </div>
     <div class="col-md-3">
-        <a href="{% url 'dash_verified_docs' %}" class="text-decoration-none">
-            <div class="stat-card" style="cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-                <div class="stat-icon" style="background:#38a169;"><i class="fa fa-file-circle-check"></i></div>
-                <div class="stat-info"><h3>{{ verified_docs }}</h3><p>Verified Documents</p></div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-3">
         <a href="{% url 'dash_pending_docs' %}" class="text-decoration-none">
             <div class="stat-card" style="cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
                 <div class="stat-icon" style="background:#e53e3e;"><i class="fa fa-clock"></i></div>
@@ -52,14 +44,14 @@
 <div class="row g-4">
     <div class="col-md-4">
         <div class="card-clean h-100">
-            <h5><i class="fa fa-calendar-check me-2" style="color:#38a169;"></i>Attendance</h5>
+            <h5></i>Attendance</h5>
             <p class="text-muted small">Mark and manage employee attendance records.</p>
             <a href="/hr/attendance/" class="btn btn-sm" style="background:#38a169;color:white;">Manage Attendance</a>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card-clean h-100">
-            <h5><i class="fa fa-calendar-xmark me-2" style="color:#805ad5;"></i>Leave Requests
+            <h5></i>Leave Requests
                 {% if pending_leave %}<span class="badge rounded-pill bg-danger ms-1" style="font-size:11px;">{{ pending_leave }}</span>{% endif %}
             </h5>
             <p class="text-muted small">Review and approve employee leave applications.</p>
@@ -68,7 +60,7 @@
     </div>
     <div class="col-md-4">
         <div class="card-clean h-100">
-            <h5><i class="fa fa-indian-rupee-sign me-2" style="color:#2b6cb0;"></i>Salary</h5>
+            <h5></i>Salary</h5>
             <p class="text-muted small">Create salary records and mark monthly payments.</p>
             <a href="/hr/salary/" class="btn btn-sm" style="background:#2b6cb0;color:white;">Manage Salary</a>
         </div>

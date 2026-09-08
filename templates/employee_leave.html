@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}My Leave Requests{% endblock %}
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
 <div class="container-fluid py-4">
   <h2 class="fw-bold mb-4"><i class="bi bi-calendar-x me-2 text-warning"></i>My Leave Requests</h2>
 
@@ -69,4 +71,22 @@
     </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  flatpickr("#id_start_date", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "F j, Y",
+    minDate: "today"
+  });
+  flatpickr("#id_end_date", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "F j, Y",
+    minDate: "today"
+  });
+});
+</script>
 {% endblock %}

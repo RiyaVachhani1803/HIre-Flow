@@ -44,7 +44,7 @@ def employee_required(view_func):
 @hr_required
 def hr_dashboard(request):
     total        = Employee.objects.filter(role='EMPLOYEE').count()
-    pending_docs = Document.objects.filter(verified=False).count()
+    pending_docs = Document.objects.filter(verified=False, rejected=False).count()
     verified_docs = Document.objects.filter(verified=True).count()
     pending_tasks = Task.objects.filter(completed=False).count()
     pending_leave = LeaveRequest.objects.filter(status='pending').count()
@@ -96,7 +96,7 @@ def employee_list(request):
 def employee_profile(request, pk):
     employee  = get_object_or_404(Employee, pk=pk)
     documents = Document.objects.filter(employee=employee)
-    skills = [s.strip() for s in employee.skills.split(',')] if employee.skills else []
+    skills = [s.strip() for s in employee.skills.split(',') if s.strip()] if employee.skills else []
     return render(request, 'employee_profile.html', {
         'employee':  employee,
         'documents': documents,
@@ -151,6 +151,14 @@ def add_employee(request):
                 try:
                     from .resume_parser import parse_resume_and_update_employee
                     result = parse_resume_and_update_employee(emp, emp.resume.path)
+                    
+                    # Also create a Document record so it appears in the documents list
+                    Document.objects.get_or_create(
+                        employee=emp,
+                        document_type='resume',
+                        defaults={'file': emp.resume, 'verified': True}
+                    )
+
                     if result['skills']:
                         messages.info(request, f"Resume parsed! Skills found: {', '.join(result['skills'])}")
                 except Exception as e:
@@ -172,6 +180,8 @@ def document_list(request):
 def verify_document(request, pk):
     doc = get_object_or_404(Document, pk=pk)
     doc.verified = True
+    doc.rejected = False
+    doc.rejection_reason = ""
     doc.save()
 
     # Update onboarding progress
@@ -216,7 +226,7 @@ def analytics(request):
 
     total_employees = Employee.objects.filter(role='EMPLOYEE').count()
     verified_docs   = Document.objects.filter(verified=True).count()
-    pending_docs    = Document.objects.filter(verified=False).count()
+    pending_docs    = Document.objects.filter(verified=False, rejected=False).count()
     dept_data       = Employee.objects.filter(role='EMPLOYEE').values('department').annotate(count=Count('id'))
     departments     = [d['department'] for d in dept_data]
     counts          = [d['count']      for d in dept_data]
@@ -258,6 +268,11 @@ def upload_document(request):
             if doc.document_type == 'resume':
                 try:
                     from .resume_parser import parse_resume_and_update_employee
+                    
+                    # Sync to Employee.resume field
+                    emp.resume = doc.file
+                    emp.save(update_fields=['resume'])
+
                     result = parse_resume_and_update_employee(emp, doc.file.path)
                     emp.refresh_from_db()
                     if result['skills']:
@@ -435,6 +450,7 @@ def employee_attendance(request):
     """Employee views their own attendance history."""
     emp     = Employee.objects.get(user=request.user)
     records = Attendance.objects.filter(employee=emp)
+    leaves  = LeaveRequest.objects.filter(employee=emp, status='approved')
 
     # Quick stats for current month
     from django.utils import timezone as tz
@@ -446,6 +462,7 @@ def employee_attendance(request):
     return render(request, 'employee_attendance.html', {
         'employee':     emp,
         'records':      records[:60],
+        'leaves':       leaves,
         'present_days': present_days,
         'absent_days':  absent_days,
     })

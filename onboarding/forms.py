@@ -32,11 +32,16 @@ class AddEmployeeForm(forms.ModelForm):
 
 
 class DocumentUploadForm(forms.ModelForm):
+    document_type = forms.ChoiceField(
+        choices=Document.DOCUMENT_TYPES,
+        widget=forms.Select(attrs={'class': SELECT_CLASS}),
+        label="Document Type"
+    )
+
     class Meta:
         model  = Document
         fields = ['document_type', 'file']
         widgets = {
-            'document_type': forms.Select(attrs={'class': SELECT_CLASS}),
             'file'         : forms.FileInput(attrs={'class': INPUT_CLASS}),
         }
 
@@ -87,13 +92,18 @@ class AttendanceSelfForm(forms.ModelForm):
 
 class LeaveRequestForm(forms.ModelForm):
     """Employee applies for leave."""
+    leave_type = forms.ChoiceField(
+        choices=[('', 'Select')] + LeaveRequest.LEAVE_TYPES,
+        widget=forms.Select(attrs={'class': SELECT_CLASS}),
+        label="Leave Type"
+    )
+
     class Meta:
         model  = LeaveRequest
         fields = ['leave_type', 'start_date', 'end_date', 'reason']
         widgets = {
-            'leave_type': forms.Select(attrs={'class': SELECT_CLASS}),
-            'start_date': forms.DateInput(attrs={'class': INPUT_CLASS, 'type': 'date'}),
-            'end_date'  : forms.DateInput(attrs={'class': INPUT_CLASS, 'type': 'date'}),
+            'start_date': forms.DateInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Select start date'}),
+            'end_date'  : forms.DateInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Select end date'}),
             'reason'    : forms.Textarea(attrs={'class': INPUT_CLASS, 'rows': 3}),
         }
 

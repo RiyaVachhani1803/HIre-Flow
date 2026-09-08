@@ -141,18 +141,18 @@
 
     <!-- Tab Bar -->
     <div class="tab-bar">
-        <button class="tab-btn {% if not found_id and not error %}active{% endif %}"
+        <button class="tab-btn {% if active_tab == 'pwd' %}active{% endif %}"
                 id="tabPwdBtn" onclick="switchTab('pwd')">
             <i class="fa fa-key me-1"></i> Forgot Password
         </button>
-        <button class="tab-btn {% if found_id or error %}active{% endif %}"
+        <button class="tab-btn {% if active_tab == 'id' %}active{% endif %}"
                 id="tabIdBtn" onclick="switchTab('id')">
             <i class="fa fa-id-card me-1"></i> Forgot ID
         </button>
     </div>
 
     <!-- Tab 1: Forgot Password -->
-    <div class="tab-content {% if not found_id and not error %}active{% endif %}" id="tabPwd">
+    <div class="tab-content {% if active_tab == 'pwd' %}active{% endif %}" id="tabPwd">
         <div class="icon-circle btn-blue" style="background:#4e8cff;">
             <i class="fa fa-key"></i>
         </div>
@@ -176,7 +176,7 @@
     </div>
 
     <!-- Tab 2: Forgot ID -->
-    <div class="tab-content {% if found_id or error %}active{% endif %}" id="tabId">
+    <div class="tab-content {% if active_tab == 'id' %}active{% endif %}" id="tabId">
         <div class="icon-circle" style="background:#38a169; width:65px; height:65px;
              border-radius:50%; display:flex; align-items:center; justify-content:center;
              margin: 0 auto 15px; font-size:26px; color:white;">
@@ -188,6 +188,11 @@
         </p>
 
         {% if found_id %}
+        <div class="mb-3 text-start">
+            <a href="/forgot-id/?tab=id" class="text-decoration-none text-muted small" style="font-weight: 600; font-size: 12.5px;">
+                <i class="fa fa-arrow-left me-1"></i> Back to Search
+            </a>
+        </div>
         <div class="success-box">
             <i class="fa fa-circle-check fa-2x text-success mb-2"></i>
             <p>Your ID is</p>
@@ -202,6 +207,7 @@
         </div>
         {% endif %}
 
+        {% if not found_id %}
         <form method="POST" action="/forgot-id/">
             {% csrf_token %}
             <div class="mb-3">
@@ -213,6 +219,7 @@
                 <i class="fa fa-magnifying-glass me-2"></i>Find My ID
             </button>
         </form>
+        {% endif %}
     </div>
 
     <div class="bottom-links">

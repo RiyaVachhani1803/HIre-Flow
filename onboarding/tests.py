@@ -147,6 +147,23 @@ class ResumeParserTest(TestCase):
         skills = extract_skills(text)
         self.assertNotIn("c", skills)
 
+    def test_special_characters_skills(self):
+        text_cpp = "I am a Senior C++ developer with good knowledge of Python."
+        skills_cpp = extract_skills(text_cpp)
+        self.assertIn("c++", skills_cpp)
+        self.assertNotIn("c", skills_cpp)  # C++ shouldn't trigger C false positive
+
+        text_csharp = "Looking for roles in C# development"
+        skills_csharp = extract_skills(text_csharp)
+        self.assertIn("c#", skills_csharp)
+        self.assertNotIn("c", skills_csharp)  # C# shouldn't trigger C false positive
+
+        text_both = "I know C, C++, and C#."
+        skills_both = extract_skills(text_both)
+        self.assertIn("c", skills_both)
+        self.assertIn("c++", skills_both)
+        self.assertIn("c#", skills_both)
+
     def test_empty_text_returns_empty(self):
         self.assertEqual(extract_skills(""), [])
 
@@ -215,6 +232,19 @@ class HRViewsTest(TestCase):
         self.assertRedirects(r, reverse("document_list"), fetch_redirect_response=False)
         doc.refresh_from_db()
         self.assertTrue(doc.verified)
+        self.assertFalse(doc.rejected)
+
+    def test_reverify_rejected_document(self):
+        doc = Document.objects.create(
+            employee=self.emp, document_type="id_proof", file="docs/id.pdf",
+            rejected=True, verified=False, rejection_reason="Blurry"
+        )
+        r = self.client.get(reverse("verify_document", args=[doc.pk]))
+        self.assertRedirects(r, reverse("document_list"), fetch_redirect_response=False)
+        doc.refresh_from_db()
+        self.assertTrue(doc.verified)
+        self.assertFalse(doc.rejected)
+        self.assertEqual(doc.rejection_reason, "")
 
     def test_reject_document(self):
         doc = Document.objects.create(
@@ -326,6 +356,40 @@ class EmployeeViewsTest(TestCase):
     def test_employee_profile_view_200(self):
         r = self.client.get(reverse("employee_profile_view"))
         self.assertEqual(r.status_code, 200)
+
+    @patch("onboarding.resume_parser.extract_text_from_resume")
+    def test_upload_resume_syncs_fields(self, mock_extract):
+        mock_extract.return_value = "Experienced in Python, Django, and PostgreSQL"
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        # Simulate a small PDF upload
+        pdf_file = SimpleUploadedFile("resume.pdf", b"dummy pdf content", content_type="application/pdf")
+        r = self.client.post(reverse("upload_document"), {
+            "document_type": "resume",
+            "file": pdf_file,
+        })
+        self.assertRedirects(r, reverse("upload_document"), fetch_redirect_response=False)
+        self.emp.refresh_from_db()
+        # Verify that employee.resume field is populated and synchronized
+        self.assertTrue(self.emp.resume.name.startswith("documents/resume"))
+        # Verify that skills were parsed and saved
+        self.assertIn("python", self.emp.skills.lower())
+        self.assertIn("django", self.emp.skills.lower())
+
+
+class DocumentUploadFormTest(TestCase):
+    def test_document_type_choices(self):
+        from .forms import DocumentUploadForm
+        form = DocumentUploadForm()
+        choices = list(form.fields['document_type'].choices)
+        self.assertEqual(choices[0], ('resume', 'Resume'))
+
+
+class LeaveRequestFormTest(TestCase):
+    def test_leave_type_choices(self):
+        from .forms import LeaveRequestForm
+        form = LeaveRequestForm()
+        choices = list(form.fields['leave_type'].choices)
+        self.assertEqual(choices[0], ('', 'Select'))
 
 
 # ─── ACCOUNT VIEW TESTS ───────────────────────────────────────────────────────

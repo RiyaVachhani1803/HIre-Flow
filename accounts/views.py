@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from .forms import SignupForm, HRLoginForm, EmployeeLoginForm
 from .models import Employee
 import random
@@ -159,12 +163,82 @@ def forgot_password(request):
     sent = False
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
+        
+        try:
+            user = User.objects.get(email=email)
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            domain = request.get_host()
+            protocol = 'https' if request.is_secure() else 'http'
+            reset_url = f"{protocol}://{domain}/reset-password/{uid}/{token}/"
+            
+            subject = "Password Reset Request - HireFlow"
+            message = (
+                f"Hello {user.first_name},\n\n"
+                f"You requested a password reset for your HireFlow account.\n"
+                f"Please click the link below to set a new password:\n\n"
+                f"{reset_url}\n\n"
+                f"If you did not request this, please ignore this email.\n\n"
+                f"Best regards,\n"
+                f"HireFlow Team"
+            )
+            
+            send_mail(
+                subject,
+                message,
+                'no-reply@hireflow.com',
+                [email],
+                fail_silently=False,
+            )
+        except User.DoesNotExist:
+            pass
+            
         sent = True
+        
     return render(request, 'forgot_password.html', {'sent': sent})
+
+
+# ✅ RESET PASSWORD CONFIRM
+def reset_password_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    valid_link = False
+    if user and default_token_generator.check_token(user, token):
+        valid_link = True
+
+    if request.method == 'POST' and valid_link:
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if not password or not confirm_password:
+            messages.error(request, "Please enter both password fields.")
+        elif password == confirm_password:
+            user.set_password(password)
+            user.save()
+            messages.success(request, "Your password has been successfully reset. Please log in.")
+            return redirect('/')
+        else:
+            messages.error(request, "Passwords do not match.")
+
+    return render(request, 'reset_password_confirm.html', {
+        'valid_link': valid_link,
+        'uidb64': uidb64,
+        'token': token
+    })
 
 def forgot_id(request):
     found_id = None
     error = None
+    active_tab = 'pwd'
+    
+    if request.GET.get('tab') == 'id':
+        active_tab = 'id'
+        
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
         try:
@@ -172,4 +246,10 @@ def forgot_id(request):
             found_id = emp.employee_id
         except Employee.DoesNotExist:
             error = "No account found with that email address."
-    return render(request, 'forgot_id.html', {'found_id': found_id, 'error': error})
+        active_tab = 'id'
+        
+    return render(request, 'forgot_id.html', {
+        'found_id': found_id,
+        'error': error,
+        'active_tab': active_tab
+    })

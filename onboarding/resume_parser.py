@@ -80,16 +80,38 @@ def extract_text_from_resume(file_path: str) -> str:
     return text
 
 
+def _get_skill_pattern(skill: str) -> str:
+    """
+    Generate a regex pattern that matches the skill as a whole word,
+    correctly handling leading/trailing special characters and avoiding false positives.
+    """
+    if skill == 'c':
+        return r'\bc(?![+#])\b'
+    
+    # Start boundary
+    if skill[0].isalnum() or skill[0] == '_':
+        start_boundary = r'\b'
+    else:
+        start_boundary = r'(?<!\w)'
+
+    # End boundary
+    if skill[-1].isalnum() or skill[-1] == '_':
+        end_boundary = r'\b'
+    else:
+        end_boundary = r'(?!\w)'
+
+    return start_boundary + re.escape(skill) + end_boundary
+
+
 def extract_skills(text: str) -> list[str]:
     """
     Scan the text and return a list of matched skills.
-    Uses word-boundary matching to avoid false positives (e.g. 'C' in 'CISCO').
+    Uses advanced word-boundary matching to support skills like C++ and C# while avoiding false positives.
     """
     text_lower = text.lower()
     found = []
     for skill in ALL_SKILLS:
-        # Use word boundary for short/ambiguous skills
-        pattern = r'\b' + re.escape(skill) + r'\b'
+        pattern = _get_skill_pattern(skill)
         if re.search(pattern, text_lower):
             found.append(skill)
     return found
@@ -102,7 +124,7 @@ def extract_skills_categorised(text: str) -> dict:
     for category, skills in SKILLS_DB.items():
         matched = []
         for skill in skills:
-            pattern = r'\b' + re.escape(skill) + r'\b'
+            pattern = _get_skill_pattern(skill)
             if re.search(pattern, text_lower):
                 matched.append(skill)
         if matched:
