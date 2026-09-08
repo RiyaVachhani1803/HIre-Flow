@@ -1,0 +1,559 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --surface-2: #f8fafd;
+    --border: #e8ecf3;
+    --primary: #3b6ef8;
+    --primary-soft: #eef2ff;
+    --success: #16a34a;
+    --success-soft: #dcfce7;
+    --warning: #d97706;
+    --warning-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --text: #111827;
+    --text-2: #6b7280;
+    --text-3: #9ca3af;
+    --radius: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  }
+
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); }
+
+  .ph { display: flex; align-items: center; justify-content: space-between; padding: 28px 32px 20px; }
+  .ph-title { font-size: 22px; font-weight: 700; letter-spacing: -.3px; margin: 0; }
+  .ph-sub   { font-size: 13px; color: var(--text-2); margin: 2px 0 0; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; padding: 0 32px 20px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-sm);
+    padding: 18px 20px; display: flex; align-items: center; gap: 14px;
+  }
+  .stat-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .stat-icon-blue   { background: var(--primary-soft); color: var(--primary); }
+  .stat-icon-green  { background: var(--success-soft); color: var(--success); }
+  .stat-icon-yellow { background: var(--warning-soft); color: var(--warning); }
+  .stat-icon-red    { background: var(--danger-soft);  color: var(--danger); }
+  .stat-num   { font-size: 24px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text-2); margin-top: 3px; font-weight: 500; }
+
+  .main-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    margin: 0 32px 40px; overflow: hidden;
+  }
+
+  .toolbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 22px; border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap i {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-3); font-size: 13px; pointer-events: none;
+  }
+  .search-input {
+    width: 100%; padding: 8px 12px 8px 34px; box-sizing: border-box;
+    font-size: 13.5px; font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface-2); color: var(--text); outline: none;
+  }
+  .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,110,248,.1); background: #fff; }
+  .search-input::placeholder { color: var(--text-3); }
+
+  .filter-select {
+    padding: 8px 28px 8px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface-2); color: var(--text); outline: none; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239ca3af' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+  }
+  .filter-select:focus { border-color: var(--primary); }
+
+  .doc-count-pill {
+    font-size: 12px; font-weight: 600; color: var(--text-2);
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px; margin-left: auto; white-space: nowrap;
+  }
+
+  .doc-table { width: 100%; border-collapse: collapse; }
+  .doc-table thead tr { border-bottom: 1px solid var(--border); }
+  .doc-table th {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--text-3);
+    padding: 12px 22px; text-align: left; white-space: nowrap; background: var(--surface-2);
+  }
+  .doc-table td { padding: 14px 22px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .doc-table tbody tr:last-child td { border-bottom: none; }
+  .doc-table tbody tr { transition: background .1s; }
+  .doc-table tbody tr:hover td { background: #fafbff; }
+
+  /* ── Clickable employee cell ── */
+  .emp-cell {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: inherit;
+  }
+  .emp-cell:hover .emp-avatar { transform: scale(1.08); box-shadow: 0 0 0 3px rgba(59,110,248,.25); }
+  .emp-cell:hover .emp-name-text { color: var(--primary); }
+  .emp-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b6ef8, #60a5fa);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; text-transform: uppercase;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .emp-name-text { font-size: 13.5px; font-weight: 600; transition: color .15s; }
+  .emp-dept      { font-size: 11.5px; color: var(--text-3); }
+
+  .doc-type-cell { display: flex; align-items: center; gap: 9px; }
+  .doc-icon {
+    width: 32px; height: 32px; border-radius: 7px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text-2); flex-shrink: 0;
+  }
+  .doc-type-name { font-weight: 500; font-size: 13.5px; }
+  .date-text { font-size: 13px; color: var(--text-2); font-family: 'DM Mono', monospace; }
+
+  /* ── Clickable file link ── */
+  .file-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500; color: var(--primary);
+    text-decoration: none; padding: 4px 0;
+  }
+  .file-link:hover { text-decoration: underline; color: #2451d1; }
+  .file-link i { font-size: 14px; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 4px 10px; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge-success { background: var(--success-soft); color: var(--success); }
+  .badge-success .badge-dot { background: var(--success); }
+  .badge-warning { background: var(--warning-soft); color: var(--warning); }
+  .badge-warning .badge-dot { background: var(--warning); }
+  .badge-danger  { background: var(--danger-soft);  color: var(--danger); }
+  .badge-danger  .badge-dot { background: var(--danger); }
+
+  .actions-cell { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .btn-view {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 500; color: var(--primary);
+    background: var(--primary-soft); border: 1px solid #c7d4fc;
+    border-radius: 7px; padding: 5px 11px; text-decoration: none;
+    transition: all .15s; white-space: nowrap;
+  }
+  .btn-view:hover { background: #dde7ff; color: var(--primary); }
+  .btn-verify {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 500; color: var(--success);
+    background: var(--success-soft); border: 1px solid #bbf7d0;
+    border-radius: 7px; padding: 5px 11px; text-decoration: none;
+    transition: all .15s; white-space: nowrap; cursor: pointer;
+  }
+  .btn-verify:hover { background: #bbf7d0; color: var(--success); }
+  .btn-reject {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 500; color: var(--danger);
+    background: var(--danger-soft); border: 1px solid #fecaca;
+    border-radius: 7px; padding: 5px 11px;
+    transition: all .15s; white-space: nowrap; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-reject:hover { background: #fecaca; color: var(--danger); }
+
+  .rejection-note {
+    display: block; font-size: 11px; color: var(--danger);
+    margin-top: 4px; font-style: italic; max-width: 160px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(17,24,39,.45); backdrop-filter: blur(3px);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border-radius: 18px; box-shadow: 0 8px 40px rgba(0,0,0,.18);
+    width: 100%; max-width: 440px; padding: 32px; animation: modalIn .18s ease;
+  }
+  @keyframes modalIn { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .modal-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+  .modal-icon {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: var(--danger-soft); color: var(--danger);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .modal-sub   { font-size: 13px; color: var(--text-2); margin: 0; }
+
+  .modal-label { font-size: 12.5px; font-weight: 600; color: var(--text-2); margin-bottom: 7px; display: block; }
+  .reason-quick { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .reason-chip {
+    font-size: 12px; font-weight: 500; padding: 5px 11px;
+    border: 1px solid var(--border); border-radius: 20px;
+    background: var(--surface-2); color: var(--text-2); cursor: pointer; transition: all .12s;
+  }
+  .reason-chip:hover, .reason-chip.selected {
+    border-color: var(--danger); background: var(--danger-soft); color: var(--danger);
+  }
+  .reason-textarea {
+    width: 100%; box-sizing: border-box; height: 90px; resize: vertical;
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border); border-radius: 9px; padding: 10px 13px;
+    background: var(--surface-2); color: var(--text); outline: none;
+  }
+  .reason-textarea:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(220,38,38,.1); background: #fff; }
+  .reason-textarea::placeholder { color: var(--text-3); }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+  .btn-cancel {
+    padding: 9px 20px; font-size: 13.5px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2);
+    color: var(--text-2); cursor: pointer; transition: all .12s;
+  }
+  .btn-cancel:hover { background: var(--border); }
+  .btn-confirm-reject {
+    padding: 9px 20px; font-size: 13.5px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    border: none; border-radius: 9px; background: var(--danger); color: #fff; cursor: pointer;
+    transition: all .12s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-confirm-reject:hover { background: #b91c1c; }
+
+  .empty-state { padding: 60px 20px; text-align: center; color: var(--text-3); }
+  .empty-icon  { font-size: 36px; margin-bottom: 12px; opacity: .35; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+  .empty-sub   { font-size: 13px; }
+
+  .pagination-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px; border-top: 1px solid var(--border); background: var(--surface-2);
+  }
+  .page-info { font-size: 12.5px; color: var(--text-2); }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btn {
+    width: 30px; height: 30px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 500; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-2); text-decoration: none; transition: all .15s;
+  }
+  .page-btn:hover  { border-color: var(--primary); color: var(--primary); }
+  .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .page-btn.disabled { opacity: .4; pointer-events: none; }
+
+  @media (max-width:900px) {
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .ph, .stats-row { padding-left:16px; padding-right:16px; }
+    .main-card { margin:0 16px 40px; }
+  }
+</style>
+
+<div class="ph">
+  <div>
+    <h2 class="ph-title">Documents</h2>
+    <p class="ph-sub">Manage and verify all employee documents</p>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-blue"><i class="fa fa-files-o"></i></div>
+    <div><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total Documents</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-green"><i class="fa fa-check-circle"></i></div>
+    <div><div class="stat-num" id="stat-verified">—</div><div class="stat-label">Verified</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-yellow"><i class="fa fa-clock-o"></i></div>
+    <div><div class="stat-num" id="stat-pending">—</div><div class="stat-label">Pending Review</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-red"><i class="fa fa-times-circle"></i></div>
+    <div><div class="stat-num" id="stat-rejected">—</div><div class="stat-label">Rejected</div></div>
+  </div>
+</div>
+
+<div class="main-card">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="fa fa-search"></i>
+      <input type="text" class="search-input" id="docSearch"
+             placeholder="Search by employee name or document type…">
+    </div>
+    <select class="filter-select" id="filterType">
+      <option value="">All Types</option>
+      <option value="id_proof">ID Proof</option>
+      <option value="certificate">Certificate</option>
+      <option value="resume">Resume</option>
+      <option value="offer_letter">Offer Letter</option>
+      <option value="other">Other</option>
+    </select>
+    <select class="filter-select" id="filterStatus">
+      <option value="">All Status</option>
+      <option value="verified">Verified</option>
+      <option value="pending">Pending</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <span class="doc-count-pill" id="countLabel">Loading…</span>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="doc-table" id="docTable">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Document Type</th>
+          <th>Uploaded</th>
+          <th>File</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in documents %}
+        <tr
+          data-type="{{ doc.document_type }}"
+          data-status="{% if doc.verified %}verified{% elif doc.rejected %}rejected{% else %}pending{% endif %}"
+          data-search="{{ doc.employee.full_name|lower }} {{ doc.get_document_type_display|lower }}"
+        >
+          <!-- ── Employee (avatar + name → profile) ── -->
+          <td>
+            <a href="{% url 'employee_profile' doc.employee.pk %}" class="emp-cell" title="View {{ doc.employee.full_name }}'s profile">
+              <div class="emp-avatar">{{ doc.employee.full_name|first }}</div>
+              <div>
+                <div class="emp-name-text">{{ doc.employee.full_name }}</div>
+                <div class="emp-dept">{{ doc.employee.department }}</div>
+              </div>
+            </a>
+          </td>
+
+          <!-- ── Document type ── -->
+          <td>
+            <div class="doc-type-cell">
+              <div class="doc-icon">
+                {% if 'id' in doc.document_type %}<i class="fa fa-id-card"></i>
+                {% elif 'cert' in doc.document_type %}<i class="fa fa-certificate"></i>
+                {% elif 'resume' in doc.document_type %}<i class="fa fa-file-text"></i>
+                {% elif 'offer' in doc.document_type %}<i class="fa fa-envelope-open"></i>
+                {% else %}<i class="fa fa-file"></i>{% endif %}
+              </div>
+              <span class="doc-type-name">{{ doc.get_document_type_display }}</span>
+            </div>
+          </td>
+
+          <!-- ── Upload date ── -->
+          <td><span class="date-text">{{ doc.uploaded_at|date:"d M Y"|default:"—" }}</span></td>
+
+          <!-- ── File (clickable → opens in new tab) ── -->
+          <td>
+            {% if doc.file %}
+            <a href="{{ doc.file.url }}" class="btn-view" target="_blank" rel="noopener"
+               onclick="event.stopPropagation()">
+              <i class="fa fa-eye" style="font-size:11px;"></i> Open File
+            </a>
+            {% else %}
+            <span style="font-size:12px;color:var(--text-3);">No file</span>
+            {% endif %}
+          </td>
+
+          <!-- ── Status ── -->
+          <td>
+            {% if doc.verified %}
+              <span class="badge badge-success"><span class="badge-dot"></span>Verified</span>
+            {% elif doc.rejected %}
+              <span class="badge badge-danger"><span class="badge-dot"></span>Rejected</span>
+              {% if doc.rejection_reason %}
+                <span class="rejection-note" title="{{ doc.rejection_reason }}">
+                  <i class="fa fa-info-circle"></i> {{ doc.rejection_reason|truncatechars:30 }}
+                </span>
+              {% endif %}
+            {% else %}
+              <span class="badge badge-warning"><span class="badge-dot"></span>Pending</span>
+            {% endif %}
+          </td>
+
+          <!-- ── Actions ── -->
+          <td>
+            <div class="actions-cell">
+              {% if not doc.verified and not doc.rejected %}
+                <a href="{% url 'verify_document' doc.pk %}" class="btn-verify">
+                  <i class="fa fa-check" style="font-size:11px;"></i> Verify
+                </a>
+                <button
+                  class="btn-reject"
+                  onclick="openRejectModal({{ doc.pk }}, '{{ doc.employee.full_name|escapejs }}', '{{ doc.get_document_type_display|escapejs }}')"
+                >
+                  <i class="fa fa-times" style="font-size:11px;"></i> Reject
+                </button>
+              {% endif %}
+              {% if doc.rejected %}
+                <a href="{% url 'verify_document' doc.pk %}" class="btn-verify">
+                  <i class="fa fa-refresh" style="font-size:11px;"></i> Re-verify
+                </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">
+            <div class="empty-state">
+              <div class="empty-icon"><i class="fa fa-folder-open"></i></div>
+              <div class="empty-title">No documents found</div>
+              <div class="empty-sub">Documents uploaded by employees will appear here.</div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-row">
+    <span class="page-info" id="pageInfo">
+      {% if page_obj %}
+        Showing <strong>{{ documents|length }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> documents
+      {% else %}
+        Showing <strong>{{ documents|length }}</strong> document{{ documents|length|pluralize }}
+      {% endif %}
+    </span>
+    {% if page_obj %}
+    <div class="page-btns">
+      <a href="?page={{ page_obj.previous_page_number }}"
+         class="page-btn {% if not page_obj.has_previous %}disabled{% endif %}">
+        <i class="fa fa-chevron-left" style="font-size:11px;"></i>
+      </a>
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <span class="page-btn active">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?page={{ num }}" class="page-btn">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      <a href="?page={{ page_obj.next_page_number }}"
+         class="page-btn {% if not page_obj.has_next %}disabled{% endif %}">
+        <i class="fa fa-chevron-right" style="font-size:11px;"></i>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon"><i class="fa fa-times-circle"></i></div>
+      <div>
+        <p class="modal-title">Reject Document</p>
+        <p class="modal-sub" id="modalSubtitle">Provide a reason for rejection</p>
+      </div>
+    </div>
+    <label class="modal-label">Quick reasons</label>
+    <div class="reason-quick">
+      <span class="reason-chip" onclick="selectChip(this, 'Document is blurry or unreadable')">Blurry / Unreadable</span>
+      <span class="reason-chip" onclick="selectChip(this, 'Document has expired')">Expired</span>
+      <span class="reason-chip" onclick="selectChip(this, 'Wrong document type uploaded')">Wrong Type</span>
+      <span class="reason-chip" onclick="selectChip(this, 'Document appears tampered or fake')">Tampered / Fake</span>
+      <span class="reason-chip" onclick="selectChip(this, 'Incomplete document — pages missing')">Incomplete</span>
+    </div>
+    <label class="modal-label" for="rejectReason">Additional notes (optional)</label>
+    <textarea class="reason-textarea" id="rejectReason" placeholder="Add more context for the employee…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+      <form id="rejectForm" method="POST" style="margin:0;">
+        {% csrf_token %}
+        <input type="hidden" name="reason" id="reasonHidden">
+        <button type="submit" class="btn-confirm-reject" onclick="submitRejection(event)">
+          <i class="fa fa-times" style="font-size:11px;"></i> Confirm Rejection
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const allRows = Array.from(document.querySelectorAll('#docTable tbody tr[data-status]'));
+
+  function computeStats() {
+    document.getElementById('stat-total').textContent    = allRows.length;
+    document.getElementById('stat-verified').textContent = allRows.filter(r => r.dataset.status === 'verified').length;
+    document.getElementById('stat-pending').textContent  = allRows.filter(r => r.dataset.status === 'pending').length;
+    document.getElementById('stat-rejected').textContent = allRows.filter(r => r.dataset.status === 'rejected').length;
+  }
+  computeStats();
+
+  const searchInput  = document.getElementById('docSearch');
+  const filterType   = document.getElementById('filterType');
+  const filterStatus = document.getElementById('filterStatus');
+  const countLabel   = document.getElementById('countLabel');
+
+  function applyFilters() {
+    const q = searchInput.value.toLowerCase().trim();
+    const type = filterType.value;
+    const status = filterStatus.value;
+    let visible = 0;
+    allRows.forEach(row => {
+      const ok = (!q || row.dataset.search.includes(q))
+              && (!type   || row.dataset.type   === type)
+              && (!status || row.dataset.status === status);
+      row.style.display = ok ? '' : 'none';
+      if (ok) visible++;
+    });
+    countLabel.textContent = visible + ' document' + (visible !== 1 ? 's' : '');
+  }
+  applyFilters();
+
+  searchInput.addEventListener('input',   applyFilters);
+  filterType.addEventListener('change',   applyFilters);
+  filterStatus.addEventListener('change', applyFilters);
+
+  let selectedChip = null;
+
+  function openRejectModal(docId, empName, docType) {
+    document.getElementById('modalSubtitle').textContent = empName + ' — ' + docType;
+    document.getElementById('rejectForm').action = '/hr/documents/' + docId + '/reject/';
+    document.getElementById('rejectReason').value = '';
+    document.querySelectorAll('.reason-chip').forEach(c => c.classList.remove('selected'));
+    selectedChip = null;
+    document.getElementById('rejectModal').classList.add('open');
+  }
+
+  function closeRejectModal() {
+    document.getElementById('rejectModal').classList.remove('open');
+  }
+
+  function selectChip(el, text) {
+    document.querySelectorAll('.reason-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedChip = text;
+    if (!document.getElementById('rejectReason').value.trim()) {
+      document.getElementById('rejectReason').value = text;
+    }
+  }
+
+  function submitRejection(e) {
+    const textarea = document.getElementById('rejectReason').value.trim();
+    document.getElementById('reasonHidden').value = textarea || selectedChip || 'No reason provided';
+  }
+
+  document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRejectModal();
+  });
+</script>
+
+{% endblock %}

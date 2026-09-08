@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Documents & Resume — HireFlow{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 860px">
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show py-2" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-folder2-open me-2 text-primary"></i>My Documents & Resume</h4>
+    <a href="{% url 'employee_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── Upload Form ─────────────────────────────── -->
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-primary text-white fw-semibold py-3">
+          <i class="bi bi-upload me-2"></i>Upload New Document
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted small mb-3">
+            Upload any document below. If you select <strong>Resume</strong> as the type,
+            your skills will be automatically extracted and saved to your profile.
+          </p>
+
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <div class="text-danger small mt-1">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="bi bi-cloud-upload me-2"></i>Upload
+            </button>
+          </form>
+
+          <!-- Skills hint -->
+          <div class="border-top mt-4 pt-3">
+            <p class="text-muted small fw-semibold mb-2"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Skills we detect from resumes:</p>
+            <div class="d-flex flex-wrap gap-1">
+              {% for skill in "Python,Django,React,Java,SQL,Docker,AWS,Git,JavaScript,Node.js,MongoDB,TensorFlow"|split:"," %}
+              <span class="badge bg-light text-dark border" style="font-size:11px">{{ skill }}</span>
+              {% endfor %}
+              <span class="badge bg-light text-muted border" style="font-size:11px">+80 more…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Extracted Skills ────────────────────────── -->
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header fw-semibold py-3" style="background:#f8f9ff">
+          <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Skills from Resume
+        </div>
+        <div class="card-body p-4">
+          {% with skills=employee.skills %}
+          {% if skills %}
+            <div class="d-flex flex-wrap gap-2">
+              {% for skill in skills.split:"," %}
+                {% if skill.strip %}
+                <span class="badge rounded-pill px-3 py-2"
+                      style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:13px">
+                  {{ skill.strip }}
+                </span>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <p class="text-muted small mt-3 mb-0">
+              <i class="bi bi-info-circle me-1"></i>
+              Upload a new Resume document above to update these skills.
+            </p>
+          {% else %}
+            <div class="alert alert-info d-flex align-items-center mb-0">
+              <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+              <div>No skills extracted yet. Upload your <strong>Resume</strong> (PDF/DOCX) above to auto-extract skills.</div>
+            </div>
+          {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+
+      <!-- ── Uploaded Documents List ─────────────── -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header fw-semibold py-3" style="background:#f8f9ff">
+          <i class="bi bi-files me-2"></i>Uploaded Documents
+        </div>
+        <div class="card-body p-0">
+          {% if documents %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Type</th>
+                  <th>File</th>
+                  <th>Uploaded</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for doc in documents %}
+                <tr>
+                  <td class="ps-3">
+                    <span class="badge bg-secondary">{{ doc.get_document_type_display }}</span>
+                  </td>
+                  <td>
+                    <a href="{{ doc.file.url }}" target="_blank" class="text-decoration-none small">
+                      <i class="bi bi-file-earmark me-1"></i>View
+                    </a>
+                  </td>
+                  <td class="small text-muted">{{ doc.uploaded_at|date:"d M Y" }}</td>
+                  <td>
+                    {% if doc.rejected %}
+                      <span class="badge bg-danger">Rejected</span>
+                      {% if doc.rejection_reason %}
+                        <small class="text-muted d-block" style="font-size:11px">{{ doc.rejection_reason }}</small>
+                      {% endif %}
+                    {% elif doc.verified %}
+                      <span class="badge bg-success">Verified</span>
+                    {% else %}
+                      <span class="badge bg-warning text-dark">Pending</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="p-4 text-center text-muted small">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>No documents uploaded yet.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
