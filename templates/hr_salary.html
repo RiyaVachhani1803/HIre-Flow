@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Salary Management{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-cash-coin me-2 text-success"></i>Salary Management</h2>
+    <div class="bg-success bg-opacity-10 border border-success rounded px-3 py-2">
+      <span class="text-success fw-semibold">Total Paid: ₹{{ total_paid|floatformat:2 }}</span>
+    </div>
+  </div>
+
+  <!-- Add/Update Salary -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-success text-white fw-semibold">
+      <i class="bi bi-plus-circle me-2"></i>Add / Update Salary Record
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Employee</label>{{ form.employee }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Month</label>{{ form.month }}
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">Year</label>{{ form.year }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Basic Salary (₹)</label>{{ form.basic_salary }}
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">HRA (₹)</label>{{ form.hra }}
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">Allowances</label>{{ form.allowances }}
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">Deductions</label>{{ form.deductions }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Remarks</label>{{ form.remarks }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Mark as Paid</label><br>{{ form.paid }}
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Filter by Employee</label>
+          <select name="employee" class="form-select">
+            <option value="">All</option>
+            {% for emp in employees %}
+            <option value="{{ emp.pk }}" {% if emp_filter == emp.pk|stringformat:"s" %}selected{% endif %}>{{ emp.full_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Year</label>
+          <input type="number" name="year" class="form-control" value="{{ year_filter }}" placeholder="e.g. 2025">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+        </div>
+        <div class="col-md-2">
+          <a href="{% url 'hr_salary' %}" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Salary Table -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Employee</th><th>Month</th><th>Year</th>
+            <th>Basic</th><th>HRA</th><th>Allowances</th>
+            <th>Deductions</th><th class="fw-bold">Net Salary</th>
+            <th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sal in salaries %}
+          <tr>
+            <td>{{ sal.employee.full_name }}</td>
+            <td>{{ sal.month_name }}</td>
+            <td>{{ sal.year }}</td>
+            <td>₹{{ sal.basic_salary|floatformat:0 }}</td>
+            <td>₹{{ sal.hra|floatformat:0 }}</td>
+            <td>₹{{ sal.allowances|floatformat:0 }}</td>
+            <td class="text-danger">-₹{{ sal.deductions|floatformat:0 }}</td>
+            <td class="fw-bold text-success">₹{{ sal.net_salary|floatformat:0 }}</td>
+            <td>
+              {% if sal.paid %}<span class="badge bg-success">Paid</span>
+              {% else %}<span class="badge bg-secondary">Unpaid</span>{% endif %}
+            </td>
+            <td>
+              {% if not sal.paid %}
+              <a href="{% url 'mark_salary_paid' sal.pk %}" class="btn btn-sm btn-success"
+                 onclick="return confirm('Mark salary as paid?')">Mark Paid</a>
+              {% else %}
+              <small class="text-muted">{{ sal.paid_on }}</small>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="10" class="text-center text-muted py-4">No salary records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
