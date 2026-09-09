@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up - HireFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1f2e, #2d3446);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 0;
+        }
+        .signup-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 520px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .brand { font-size: 24px; font-weight: 800; color: #1a1f2e; text-align: center; }
+        .brand span { color: #4e8cff; }
+
+        /* Step indicator */
+        .step-indicator {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin: 20px 0 30px;
+            position: relative;
+        }
+        .step-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+            position: relative;
+            z-index: 2;
+        }
+        .step-bubble {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #a0aec0;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 13px;
+            transition: all 0.3s;
+        }
+        .step-bubble.active { background: #4e8cff; color: white; }
+        .step-bubble.done   { background: #38a169; color: white; }
+        .step-line {
+            height: 2px;
+            flex-grow: 1;
+            background: #e2e8f0;
+            margin-top: 16px;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+            min-width: 20px;
+        }
+        .step-line.done { background: #38a169; }
+
+        .step-label {
+            font-size: 11px;
+            color: #a0aec0;
+            text-align: center;
+            margin-top: 8px;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        .step-label.active { color: #4e8cff; font-weight: 700; }
+
+        /* Steps */
+        .step { display: none; }
+        .step.active { display: block; }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1f2e;
+            margin-bottom: 18px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f4ff;
+        }
+        .section-title i { color: #4e8cff; margin-right: 8px; }
+
+        .form-group { position: relative; margin-bottom: 14px; }
+        .form-group .icon {
+            position: absolute;
+            left: 13px; top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0; font-size: 13px;
+        }
+        .form-control, .form-select {
+            padding-left: 36px;
+            border-radius: 10px;
+            height: 44px;
+            border: 1.5px solid #e2e8f0;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #4e8cff;
+            box-shadow: 0 0 0 3px rgba(78,140,255,0.12);
+        }
+
+        /* Role cards */
+        .role-cards {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .role-card {
+            flex: 1;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .role-card:hover { border-color: #4e8cff; background: #f8fbff; }
+        .role-card.selected { border-color: #4e8cff; background: #f0f7ff; }
+        .role-card i { font-size: 28px; margin-bottom: 8px; display: block; }
+        .role-card.employee i { color: #38a169; }
+        .role-card.hr i { color: #4e8cff; }
+        .role-card strong { font-size: 14px; color: #1a1f2e; }
+        .role-card p { font-size: 11px; color: #718096; margin: 4px 0 0; }
+
+        /* Buttons */
+        .btn-next {
+            background: #4e8cff; color: white;
+            border: none; border-radius: 10px;
+            height: 46px; width: 100%;
+            font-size: 15px; font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn-next:hover { background: #3a7bd5; }
+        .btn-back {
+            background: #f1f5f9; color: #1a1f2e;
+            border: none; border-radius: 10px;
+            height: 46px; width: 100%;
+            font-size: 15px; font-weight: 600;
+        }
+        .btn-back:hover { background: #e2e8f0; }
+        .btn-submit {
+            background: #38a169; color: white;
+            border: none; border-radius: 10px;
+            height: 46px; width: 100%;
+            font-size: 15px; font-weight: 600;
+        }
+        .btn-submit:hover { background: #2f855a; }
+
+        .bottom-link {
+            text-align: center;
+            font-size: 13px;
+            color: #718096;
+            margin-top: 18px;
+        }
+        .bottom-link a { color: #4e8cff; text-decoration: none; }
+
+        .error-msg {
+            background: #fff5f5;
+            border: 1px solid #fc8181;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #c53030;
+            margin-bottom: 14px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+
+        /* Custom Flag Dropdown */
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+        }
+        .custom-select-trigger {
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-radius: 10px;
+            height: 44px;
+            border: 1.5px solid #e2e8f0;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .custom-select-trigger:hover {
+            border-color: #4e8cff;
+        }
+        .custom-select-wrapper.open .custom-select-trigger {
+            border-color: #4e8cff;
+            box-shadow: 0 0 0 3px rgba(78,140,255,0.12);
+        }
+        .custom-options-container {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            min-width: 180px;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 999;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .custom-select-wrapper.open .custom-options-container {
+            display: block;
+        }
+        .custom-option {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+            color: #4a5568;
+        }
+        .custom-option:hover {
+            background: #f0f7ff;
+            color: #4e8cff;
+        }
+        .custom-option img, .custom-select-trigger img {
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+<div class="signup-card">
+
+    <div class="brand">HireFlow</div>
+    <p class="text-center text-muted" style="font-size:13px; margin-top:4px;">
+        Create your account
+    </p>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step-node" id="node1">
+            <div class="step-bubble active" id="b1">1</div>
+            <span class="step-label active" id="l1t">Account</span>
+        </div>
+        <div class="step-line" id="l1"></div>
+        <div class="step-node" id="node2">
+            <div class="step-bubble" id="b2">2</div>
+            <span class="step-label" id="l2t">Personal</span>
+        </div>
+        <div class="step-line" id="l2"></div>
+        <div class="step-node" id="node3">
+            <div class="step-bubble" id="b3">3</div>
+            <span class="step-label" id="l3t">Employment</span>
+        </div>
+        <div class="step-line" id="l3"></div>
+        <div class="step-node" id="node4">
+            <div class="step-bubble" id="b4">4</div>
+            <span class="step-label" id="l4t">Password</span>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-danger py-2 mt-3">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" id="signupForm">
+        {% csrf_token %}
+        <input type="hidden" name="role" id="roleInput">
+        <input type="hidden" name="employee_id_preview" id="empIdHidden">
+
+        <!-- STEP 1: Account Type -->
+        <div class="step active" id="step1">
+            <div class="section-title mt-3">
+                <i class="fa fa-tag"></i>Select Account Type
+            </div>
+
+            <div id="roleError" class="error-msg">
+                Please select an account type to continue.
+            </div>
+
+            <div class="role-cards">
+                <div class="role-card employee" id="cardEmployee" onclick="selectRole('EMPLOYEE')">
+                    <i class="fa fa-user"></i>
+                    <strong>Employee</strong>
+                    <p>Join as a team member</p>
+                </div>
+                <div class="role-card hr" id="cardHR" onclick="selectRole('HR')">
+                    <i class="fa fa-shield-halved"></i>
+                    <strong>HR Manager</strong>
+                    <p>Manage onboarding</p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="button" class="btn-next" onclick="goStep(1, 2)">
+                    Continue <i class="fa fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Personal Info -->
+        <div class="step" id="step2">
+            <div class="section-title mt-3">
+                <i class="fa fa-user"></i>Personal Information
+            </div>
+
+            <div id="personalError" class="error-msg"></div>
+
+            <div class="row g-2">
+                <div class="col-6">
+                    <div class="form-group">
+                        <i class="fa fa-user icon"></i>
+                        <input type="text" name="first_name" id="firstName"
+                               class="form-control" placeholder="First Name">
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <i class="fa fa-user icon"></i>
+                        <input type="text" name="last_name" id="lastName"
+                               class="form-control" placeholder="Last Name">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <i class="fa fa-envelope icon"></i>
+                <input type="email" name="email" id="emailField"
+                       class="form-control" placeholder="Email Address">
+            </div>
+
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="form-group">
+                        <div class="custom-select-wrapper" id="countryWrapper">
+                            <div class="custom-select-trigger" onclick="toggleCustomDropdown(event)">
+                                <img id="selectedFlag" src="https://flagcdn.com/w20/in.png" width="20" height="15" alt="IN" class="me-2">
+                                <span id="selectedCode">+91</span>
+                                <i class="fa fa-chevron-down ms-auto" style="font-size: 10px; color: #a0aec0;"></i>
+                            </div>
+                            <div class="custom-options-container" id="customOptions">
+                                <div class="custom-option" onclick="selectCountry('+91', 'in')">
+                                    <img src="https://flagcdn.com/w20/in.png" width="20" height="15" alt="IN" class="me-2">
+                                    <span>+91 (India)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+1', 'us')">
+                                    <img src="https://flagcdn.com/w20/us.png" width="20" height="15" alt="US" class="me-2">
+                                    <span>+1 (USA)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+1', 'ca')">
+                                    <img src="https://flagcdn.com/w20/ca.png" width="20" height="15" alt="CA" class="me-2">
+                                    <span>+1 (Canada)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+44', 'gb')">
+                                    <img src="https://flagcdn.com/w20/gb.png" width="20" height="15" alt="GB" class="me-2">
+                                    <span>+44 (UK)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+353', 'ie')">
+                                    <img src="https://flagcdn.com/w20/ie.png" width="20" height="15" alt="IE" class="me-2">
+                                    <span>+353 (Ireland)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+61', 'au')">
+                                    <img src="https://flagcdn.com/w20/au.png" width="20" height="15" alt="AU" class="me-2">
+                                    <span>+61 (Australia)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+64', 'nz')">
+                                    <img src="https://flagcdn.com/w20/nz.png" width="20" height="15" alt="NZ" class="me-2">
+                                    <span>+64 (New Zealand)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+49', 'de')">
+                                    <img src="https://flagcdn.com/w20/de.png" width="20" height="15" alt="DE" class="me-2">
+                                    <span>+49 (Germany)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+33', 'fr')">
+                                    <img src="https://flagcdn.com/w20/fr.png" width="20" height="15" alt="FR" class="me-2">
+                                    <span>+33 (France)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+39', 'it')">
+                                    <img src="https://flagcdn.com/w20/it.png" width="20" height="15" alt="IT" class="me-2">
+                                    <span>+39 (Italy)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+34', 'es')">
+                                    <img src="https://flagcdn.com/w20/es.png" width="20" height="15" alt="ES" class="me-2">
+                                    <span>+34 (Spain)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+31', 'nl')">
+                                    <img src="https://flagcdn.com/w20/nl.png" width="20" height="15" alt="NL" class="me-2">
+                                    <span>+31 (Netherlands)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+41', 'ch')">
+                                    <img src="https://flagcdn.com/w20/ch.png" width="20" height="15" alt="CH" class="me-2">
+                                    <span>+41 (Switzerland)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+46', 'se')">
+                                    <img src="https://flagcdn.com/w20/se.png" width="20" height="15" alt="SE" class="me-2">
+                                    <span>+46 (Sweden)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+47', 'no')">
+                                    <img src="https://flagcdn.com/w20/no.png" width="20" height="15" alt="NO" class="me-2">
+                                    <span>+47 (Norway)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+45', 'dk')">
+                                    <img src="https://flagcdn.com/w20/dk.png" width="20" height="15" alt="DK" class="me-2">
+                                    <span>+45 (Denmark)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+358', 'fi')">
+                                    <img src="https://flagcdn.com/w20/fi.png" width="20" height="15" alt="FI" class="me-2">
+                                    <span>+358 (Finland)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+971', 'ae')">
+                                    <img src="https://flagcdn.com/w20/ae.png" width="20" height="15" alt="AE" class="me-2">
+                                    <span>+971 (UAE)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+966', 'sa')">
+                                    <img src="https://flagcdn.com/w20/sa.png" width="20" height="15" alt="SA" class="me-2">
+                                    <span>+966 (Saudi Arabia)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+974', 'qa')">
+                                    <img src="https://flagcdn.com/w20/qa.png" width="20" height="15" alt="QA" class="me-2">
+                                    <span>+974 (Qatar)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+965', 'kw')">
+                                    <img src="https://flagcdn.com/w20/kw.png" width="20" height="15" alt="KW" class="me-2">
+                                    <span>+965 (Kuwait)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+65', 'sg')">
+                                    <img src="https://flagcdn.com/w20/sg.png" width="20" height="15" alt="SG" class="me-2">
+                                    <span>+65 (Singapore)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+81', 'jp')">
+                                    <img src="https://flagcdn.com/w20/jp.png" width="20" height="15" alt="JP" class="me-2">
+                                    <span>+81 (Japan)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+82', 'kr')">
+                                    <img src="https://flagcdn.com/w20/kr.png" width="20" height="15" alt="KR" class="me-2">
+                                    <span>+82 (South Korea)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+86', 'cn')">
+                                    <img src="https://flagcdn.com/w20/cn.png" width="20" height="15" alt="CN" class="me-2">
+                                    <span>+86 (China)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+852', 'hk')">
+                                    <img src="https://flagcdn.com/w20/hk.png" width="20" height="15" alt="HK" class="me-2">
+                                    <span>+852 (Hong Kong)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+92', 'pk')">
+                                    <img src="https://flagcdn.com/w20/pk.png" width="20" height="15" alt="PK" class="me-2">
+                                    <span>+92 (Pakistan)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+880', 'bd')">
+                                    <img src="https://flagcdn.com/w20/bd.png" width="20" height="15" alt="BD" class="me-2">
+                                    <span>+880 (Bangladesh)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+94', 'lk')">
+                                    <img src="https://flagcdn.com/w20/lk.png" width="20" height="15" alt="LK" class="me-2">
+                                    <span>+94 (Sri Lanka)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+977', 'np')">
+                                    <img src="https://flagcdn.com/w20/np.png" width="20" height="15" alt="NP" class="me-2">
+                                    <span>+977 (Nepal)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+60', 'my')">
+                                    <img src="https://flagcdn.com/w20/my.png" width="20" height="15" alt="MY" class="me-2">
+                                    <span>+60 (Malaysia)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+62', 'id')">
+                                    <img src="https://flagcdn.com/w20/id.png" width="20" height="15" alt="ID" class="me-2">
+                                    <span>+62 (Indonesia)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+63', 'ph')">
+                                    <img src="https://flagcdn.com/w20/ph.png" width="20" height="15" alt="PH" class="me-2">
+                                    <span>+63 (Philippines)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+66', 'th')">
+                                    <img src="https://flagcdn.com/w20/th.png" width="20" height="15" alt="TH" class="me-2">
+                                    <span>+66 (Thailand)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+84', 'vn')">
+                                    <img src="https://flagcdn.com/w20/vn.png" width="20" height="15" alt="VN" class="me-2">
+                                    <span>+84 (Vietnam)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+7', 'ru')">
+                                    <img src="https://flagcdn.com/w20/ru.png" width="20" height="15" alt="RU" class="me-2">
+                                    <span>+7 (Russia)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+90', 'tr')">
+                                    <img src="https://flagcdn.com/w20/tr.png" width="20" height="15" alt="TR" class="me-2">
+                                    <span>+90 (Turkey)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+55', 'br')">
+                                    <img src="https://flagcdn.com/w20/br.png" width="20" height="15" alt="BR" class="me-2">
+                                    <span>+55 (Brazil)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+54', 'ar')">
+                                    <img src="https://flagcdn.com/w20/ar.png" width="20" height="15" alt="AR" class="me-2">
+                                    <span>+54 (Argentina)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+52', 'mx')">
+                                    <img src="https://flagcdn.com/w20/mx.png" width="20" height="15" alt="MX" class="me-2">
+                                    <span>+52 (Mexico)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+27', 'za')">
+                                    <img src="https://flagcdn.com/w20/za.png" width="20" height="15" alt="ZA" class="me-2">
+                                    <span>+27 (South Africa)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+20', 'eg')">
+                                    <img src="https://flagcdn.com/w20/eg.png" width="20" height="15" alt="EG" class="me-2">
+                                    <span>+20 (Egypt)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+234', 'ng')">
+                                    <img src="https://flagcdn.com/w20/ng.png" width="20" height="15" alt="NG" class="me-2">
+                                    <span>+234 (Nigeria)</span>
+                                </div>
+                                <div class="custom-option" onclick="selectCountry('+254', 'ke')">
+                                    <img src="https://flagcdn.com/w20/ke.png" width="20" height="15" alt="KE" class="me-2">
+                                    <span>+254 (Kenya)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-8">
+                    <div class="form-group">
+                        <i class="fa fa-phone icon"></i>
+                        <input type="text" id="phoneField" maxlength="10"
+                               class="form-control" placeholder="Phone Number" oninput="updatePhoneHidden()">
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="phone" id="phoneHidden">
+
+            <div class="row g-2 mt-2">
+                <div class="col-6">
+                    <button type="button" class="btn-back" onclick="goStep(2, 1)">
+                        <i class="fa fa-arrow-left me-2"></i>Back
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button type="button" class="btn-next" onclick="goStep(2, 3)">
+                        Continue <i class="fa fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Employment -->
+        <div class="step" id="step3">
+            <div class="section-title mt-3">
+                <i class="fa fa-briefcase"></i>Employment Details
+            </div>
+
+            <div id="employmentError" class="error-msg"></div>
+
+            <div class="row g-2">
+                <div class="col-6">
+                    <div class="form-group">
+                        <i class="fa fa-building icon"></i>
+                        <select name="department" id="deptField" class="form-select"
+                                style="padding-left:36px;" onchange="filterPositions(); updateId();">
+                            <option value="" disabled selected hidden>Department</option>
+                            <option>Engineering</option>
+                            <option>Marketing</option>
+                            <option>Sales</option>
+                            <option>Human Resources</option>
+                            <option>Finance</option>
+                            <option>Operations</option>
+                            <option>IT Support</option>
+                            <option>Customer Service</option>
+                            <option>Product Management</option>
+                            <option>Quality Assurance</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <i class="fa fa-id-badge icon"></i>
+                        <select name="position" id="posField" class="form-select"
+                                style="padding-left:36px;" onchange="updateId()">
+                            <option value="" disabled selected hidden>Position</option>
+                            <option>Software Engineer</option>
+                            <option>Frontend Developer</option>
+                            <option>Backend Developer</option>
+                            <option>Full Stack Developer</option>
+                            <option>UI/UX Designer</option>
+                            <option>DevOps Engineer</option>
+                            <option>QA Engineer</option>
+                            <option>HR Associate</option>
+                            <option>HR Manager</option>
+                            <option>Sales Executive</option>
+                            <option>Sales Manager</option>
+                            <option>Marketing Specialist</option>
+                            <option>Marketing Manager</option>
+                            <option>Financial Analyst</option>
+                            <option>Accountant</option>
+                            <option>Operations Manager</option>
+                            <option>IT Support Specialist</option>
+                            <option>Customer Success Specialist</option>
+                            <option>Product Manager</option>
+                            <option>Founder & CEO</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600; color:#4a5568; margin-bottom:6px; display:block;">
+                    <i class="fa fa-calendar me-1" style="color:#4e8cff;"></i>Joining Date
+                </label>
+                <input type="date" name="joining_date" id="joiningDate"
+                       class="form-control" style="padding-left:15px;"
+                       onchange="updateId()">
+            </div>
+
+            <div class="row g-2 mt-2">
+                <div class="col-6">
+                    <button type="button" class="btn-back" onclick="goStep(3, 2)">
+                        <i class="fa fa-arrow-left me-2"></i>Back
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button type="button" class="btn-next" onclick="goStep(3, 4)">
+                        Continue <i class="fa fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: Password only (no ID preview) -->
+        <div class="step" id="step4">
+            <div class="section-title mt-3">
+                <i class="fa fa-lock"></i>Account Setup
+            </div>
+
+            <div id="passwordError" class="error-msg"></div>
+
+            <div class="form-group">
+                <i class="fa fa-lock icon"></i>
+                <input type="password" name="password" id="passField"
+                       class="form-control" placeholder="Password"
+                       oninput="checkStrength()">
+            </div>
+
+            <!-- Password strength bar -->
+            <div style="margin: -8px 0 12px; padding: 0 4px;">
+                <div style="height:4px; background:#e2e8f0; border-radius:2px;">
+                    <div id="strengthBar"
+                         style="height:4px; width:0%; border-radius:2px; transition:all 0.3s;">
+                    </div>
+                </div>
+                <span id="strengthText" style="font-size:11px; color:#a0aec0;"></span>
+            </div>
+
+            <div class="form-group">
+                <i class="fa fa-lock icon"></i>
+                <input type="password" name="confirm_password" id="confirmPass"
+                       class="form-control" placeholder="Confirm Password">
+            </div>
+
+            <div class="row g-2 mt-2">
+                <div class="col-5">
+                    <button type="button" class="btn-back" onclick="goStep(4, 3)">
+                        <i class="fa fa-arrow-left me-2"></i>Back
+                    </button>
+                </div>
+                <div class="col-7">
+                    <button type="submit" class="btn-submit">
+                        <i class="fa fa-user-plus me-2"></i>Create Account
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+    <div class="bottom-link">
+        Already have an account? <a href="/">Sign In</a>
+    </div>
+</div>
+
+<script>
+    const positionsByDept = {
+        'Engineering': [
+            'Software Engineer',
+            'Frontend Developer',
+            'Backend Developer',
+            'Full Stack Developer',
+            'QA Engineer',
+            'DevOps Engineer'
+        ],
+        'Marketing': [
+            'Marketing Specialist',
+            'Marketing Manager'
+        ],
+        'Sales': [
+            'Sales Executive',
+            'Sales Manager'
+        ],
+        'Human Resources': [
+            'HR Associate',
+            'HR Manager'
+        ],
+        'Finance': [
+            'Financial Analyst',
+            'Accountant'
+        ],
+        'Operations': [
+            'Operations Manager',
+            'Founder & CEO'
+        ],
+        'IT Support': [
+            'IT Support Specialist'
+        ],
+        'Customer Service': [
+            'Customer Success Specialist'
+        ],
+        'Product Management': [
+            'Product Manager',
+            'UI/UX Designer'
+        ],
+        'Quality Assurance': [
+            'QA Engineer'
+        ]
+    };
+
+    function filterPositions() {
+        const deptField = document.getElementById('deptField');
+        const posField = document.getElementById('posField');
+        if (!deptField || !posField) return;
+        
+        const dept = deptField.value;
+        const currentPos = posField.value;
+        
+        posField.innerHTML = '<option value="" disabled selected hidden>Position</option>';
+        
+        if (!dept) {
+            posField.disabled = true;
+            return;
+        }
+        
+        posField.disabled = false;
+        const positions = positionsByDept[dept] || [];
+        positions.forEach(pos => {
+            const opt = document.createElement('option');
+            opt.value = pos;
+            opt.textContent = pos;
+            posField.appendChild(opt);
+        });
+        
+        if (currentPos && positions.includes(currentPos)) {
+            posField.value = currentPos;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        filterPositions();
+        
+        const form = document.getElementById('signupForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const pass = document.getElementById('passField').value;
+                const confirm = document.getElementById('confirmPass').value;
+                const err = document.getElementById('passwordError');
+                
+                if (!err) return;
+                
+                let missing = [];
+                if (!pass) missing.push('Password');
+                if (!confirm) missing.push('Confirm Password');
+                
+                if (missing.length > 0) {
+                    e.preventDefault();
+                    let formatted = missing.length === 2 ? 'Password and Confirm Password' : missing[0];
+                    err.innerText = `Please fill in ${formatted}.`;
+                    err.classList.add('show');
+                    return;
+                }
+                
+                if (pass !== confirm) {
+                    e.preventDefault();
+                    err.innerText = 'Passwords do not match.';
+                    err.classList.add('show');
+                    return;
+                }
+                
+                err.classList.remove('show');
+            });
+        }
+    });
+
+    let selectedRole = '';
+
+    function selectRole(role) {
+        selectedRole = role;
+        document.getElementById('roleInput').value = role;
+        document.getElementById('cardEmployee').classList.remove('selected');
+        document.getElementById('cardHR').classList.remove('selected');
+        if (role === 'EMPLOYEE') {
+            document.getElementById('cardEmployee').classList.add('selected');
+        } else {
+            document.getElementById('cardHR').classList.add('selected');
+        }
+        updateId();
+    }
+
+    function updateId() {
+        const first = document.getElementById('firstName').value;
+        const last  = document.getElementById('lastName').value;
+        const date  = document.getElementById('joiningDate').value;
+
+        if (!selectedRole) return;
+
+        const prefix = selectedRole === 'EMPLOYEE' ? 'E' : 'H';
+        const f  = first.length >= 2 ? first.substring(0, 2).toUpperCase() : 'XX';
+        const l  = last.length  >= 2 ? last.substring(0, 2).toUpperCase()  : 'XX';
+        const yr = date ? new Date(date).getFullYear() : new Date().getFullYear();
+        const rand = Math.floor(1000 + Math.random() * 9000);
+
+        const id = `${prefix}${f}${l}${yr}${rand}`;
+        document.getElementById('empIdHidden').value = id;
+    }
+
+    function updatePhoneHidden() {
+        const code = document.getElementById('selectedCode').innerText.trim();
+        const phone = document.getElementById('phoneField').value.trim();
+        document.getElementById('phoneHidden').value = code + phone;
+    }
+
+    function toggleCustomDropdown(e) {
+        if (e) e.stopPropagation();
+        const wrapper = document.getElementById('countryWrapper');
+        wrapper.classList.toggle('open');
+    }
+
+    function selectCountry(code, flagIso) {
+        document.getElementById('selectedFlag').src = `https://flagcdn.com/w20/${flagIso}.png`;
+        document.getElementById('selectedFlag').alt = flagIso.toUpperCase();
+        document.getElementById('selectedCode').innerText = code;
+        
+        const wrapper = document.getElementById('countryWrapper');
+        wrapper.classList.remove('open');
+        
+        updatePhoneHidden();
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('countryWrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            wrapper.classList.remove('open');
+        }
+    });
+
+    function goStep(from, to) {
+        if (to > from) {
+            if (from === 1) {
+                if (!selectedRole) {
+                    document.getElementById('roleError').classList.add('show');
+                    return;
+                }
+                document.getElementById('roleError').classList.remove('show');
+            }
+
+            if (from === 2) {
+                const first = document.getElementById('firstName').value.trim();
+                const last  = document.getElementById('lastName').value.trim();
+                const email = document.getElementById('emailField').value.trim();
+                const phone = document.getElementById('phoneField').value.trim();
+                const err   = document.getElementById('personalError');
+                
+                let missing = [];
+                if (!first) missing.push('First Name');
+                if (!last) missing.push('Last Name');
+                if (!email) missing.push('Email');
+                if (!phone) missing.push('Phone Number');
+                
+                if (missing.length > 0) {
+                    let formatted = '';
+                    if (missing.length === 1) {
+                        formatted = missing[0];
+                    } else if (missing.length === 2) {
+                        formatted = `${missing[0]} and ${missing[1]}`;
+                    } else {
+                        const lastItem = missing.pop();
+                        formatted = `${missing.join(', ')} and ${lastItem}`;
+                    }
+                    err.innerText = `Please fill in ${formatted}.`;
+                    err.classList.add('show');
+                    return;
+                }
+                
+                // Email format validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    err.innerText = 'Please enter a valid Email Address.';
+                    err.classList.add('show');
+                    return;
+                }
+                
+                // Phone format validation (exactly 10 digits)
+                if (!/^\d{10}$/.test(phone)) {
+                    err.innerText = 'Please enter a valid 10-digit Phone Number.';
+                    err.classList.add('show');
+                    return;
+                }
+                
+                // Synchronize the final combined string to the hidden field
+                updatePhoneHidden();
+                
+                err.classList.remove('show');
+                updateId();
+            }
+
+            if (from === 3) {
+                const dept    = document.getElementById('deptField').value;
+                const pos     = document.getElementById('posField').value.trim();
+                const joining = document.getElementById('joiningDate').value;
+                const err     = document.getElementById('employmentError');
+                
+                let missing = [];
+                if (!dept) missing.push('Department');
+                if (!pos) missing.push('Position');
+                if (!joining) missing.push('Joining Date');
+                
+                if (missing.length > 0) {
+                    let formatted = '';
+                    if (missing.length === 1) {
+                        formatted = missing[0];
+                    } else if (missing.length === 2) {
+                        formatted = `${missing[0]} and ${missing[1]}`;
+                    } else {
+                        const lastItem = missing.pop();
+                        formatted = `${missing.join(', ')} and ${lastItem}`;
+                    }
+                    err.innerText = `Please fill in ${formatted}.`;
+                    err.classList.add('show');
+                    return;
+                }
+                err.classList.remove('show');
+                updateId();
+            }
+        }
+
+        document.getElementById('step' + from).classList.remove('active');
+        document.getElementById('step' + to).classList.add('active');
+
+        for (let i = 1; i <= 4; i++) {
+            const b = document.getElementById('b' + i);
+            b.classList.remove('active', 'done');
+            if (i < to)        b.classList.add('done');
+            else if (i === to) b.classList.add('active');
+        }
+
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById('l' + i).classList.toggle('done', i < to);
+        }
+
+        const labels = ['l1t', 'l2t', 'l3t', 'l4t'];
+        labels.forEach((id, idx) => {
+            const el = document.getElementById(id);
+            el.classList.remove('active');
+            if (idx + 1 === to) el.classList.add('active');
+        });
+    }
+
+    function checkStrength() {
+        const val = document.getElementById('passField').value;
+        const bar = document.getElementById('strengthBar');
+        const txt = document.getElementById('strengthText');
+        if (val.length === 0) {
+            bar.style.width = '0%'; txt.innerText = ''; return;
+        }
+        if (val.length > 8 && /[A-Z]/.test(val) && /\d/.test(val) && /[^a-zA-Z0-9]/.test(val)) {
+            bar.style.width = '100%'; bar.style.background = '#38a169';
+            txt.innerText = 'Strong'; txt.style.color = '#38a169';
+        } else if (val.length > 6 && (/[A-Z]/.test(val) || /\d/.test(val))) {
+            bar.style.width = '60%'; bar.style.background = '#d69e2e';
+            txt.innerText = 'Medium'; txt.style.color = '#d69e2e';
+        } else {
+            bar.style.width = '25%'; bar.style.background = '#e53e3e';
+            txt.innerText = 'Weak'; txt.style.color = '#e53e3e';
+        }
+    }
+</script>
+
+</body>
+</html>
